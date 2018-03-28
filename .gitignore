@@ -7,6 +7,8 @@ src/verilog_scanner.c
 src/verilog_parser.output
 src/verilog_parser.tab.c
 src/verilog_parser.tab.h
+src/libverilog_parser.a
+src/parser
 
 build/
 tags
