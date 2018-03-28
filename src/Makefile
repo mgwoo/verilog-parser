@@ -14,22 +14,11 @@ LINKCFLAGS = $(CFLAGS) -static-libstdc++
  
 DEBUG = -g -gstrict-dwarf -gdwarf-2
 
-$(EXE):verilog_ast.o verilog_ast_common.o verilog_ast_mem.o verilog_ast_util.o verilog_parser.tab.o verilog_parser_wrapper.o verilog_preprocessor.o verilog_scanner.o main.o
-	@echo " "
-	@echo "Linking..."
-	@echo " "
+.PHONY: all
+all: $(EXE) static
+
+$(EXE): verilog_ast.o verilog_ast_common.o verilog_ast_mem.o verilog_ast_util.o verilog_parser.tab.o verilog_parser_wrapper.o verilog_preprocessor.o verilog_scanner.o main.o
 	$(CXX) $(DEBUG) $(CXXOPTS) $^ -o $@ $(LINKCFLAGS)
-	@echo " "
-	@echo "Linking is Completed !!"
-	@echo " "
-	@echo "Tagging..."
-	@echo " "
-	ctags -R
-	@echo " "
-	@echo "Finished..!"
-	@echo " "
-	@echo "GNU GCC/G++ compiler has been used as"
-	@g++ --version
 
 verilog_scanner.c: verilog_scanner.l verilog_parser.tab.c
 	$(FLEX) $<
@@ -65,8 +54,15 @@ verilog_scanner.o: verilog_scanner.c verilog_ast.h verilog_preprocessor.h
 main.o: main.c verilog_parser.h verilog_ast_common.h verilog_preprocessor.h verilog_ast_util.h
 	$(CXX) $(CFLAGS) -c -o $@ $<
 
+.PHONY: static
+static: libverilog_parser.a
+
+libverilog_parser.a: verilog_ast.o verilog_ast_common.o verilog_ast_mem.o verilog_ast_util.o verilog_parser.tab.o verilog_parser_wrapper.o verilog_preprocessor.o verilog_scanner.o 
+	ar rc $@ $^ 
+
+
 .PHONY: clean
 clean: 
-	/bin/rm -f *.o $(EXE) verilog_parser.tab.c verilog_parser.tab.h verilog_scanner.c verilog_parser.output parser 2> /dev/null;
+	/bin/rm -f *.o $(EXE) verilog_parser.tab.c verilog_parser.tab.h verilog_scanner.c verilog_parser.output libverilog_parser.a parser 2> /dev/null;
 
 
