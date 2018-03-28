@@ -31,7 +31,7 @@ $(EXE):verilog_ast.o verilog_ast_common.o verilog_ast_mem.o verilog_ast_util.o v
 	@echo "GNU GCC/G++ compiler has been used as"
 	@g++ --version
 
-verilog_scanner.c: verilog_scanner.l
+verilog_scanner.c: verilog_scanner.l verilog_parser.tab.c
 	$(FLEX) $<
 	mv lex.yy.c verilog_scanner.c
 
@@ -50,7 +50,7 @@ verilog_ast_mem.o: verilog_ast_mem.c verilog_ast_mem.h
 verilog_ast_util.o: verilog_ast_util.c verilog_ast_util.h verilog_ast.h
 	$(CXX) $(CFLAGS) -c -o $@ $<
 
-verilog_parser.tab.o: verilog_parser.tab.c verilog_parser.tab.h verilog_ast.h
+verilog_parser.tab.o: verilog_parser.tab.c verilog_ast.h
 	$(CXX) $(CFLAGS) -c -o $@ $<
 
 verilog_parser_wrapper.o: verilog_parser_wrapper.c verilog_ast.h verilog_parser.h
@@ -59,7 +59,7 @@ verilog_parser_wrapper.o: verilog_parser_wrapper.c verilog_ast.h verilog_parser.
 verilog_preprocessor.o: verilog_preprocessor.c verilog_preprocessor.h verilog_ast.h verilog_ast_common.h
 	$(CXX) $(CFLAGS) -c -o $@ $<
 
-verilog_scanner.o: verilog_scanner.c verilog_ast.h verilog_parser.tab.h verilog_preprocessor.h
+verilog_scanner.o: verilog_scanner.c verilog_ast.h verilog_preprocessor.h
 	$(CXX) $(CFLAGS) -c -o $@ $<
 
 main.o: main.c verilog_parser.h verilog_ast_common.h verilog_preprocessor.h verilog_ast_util.h
