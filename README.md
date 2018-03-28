@@ -1,12 +1,13 @@
 
-# Verilog Parser
+# C++ Verilog Parser
 
 [![Documentation](https://codedocs.xyz/ben-marshall/verilog-parser.svg)](https://codedocs.xyz/ben-marshall/verilog-parser/)
 [![Build Status](https://travis-ci.org/ben-marshall/verilog-parser.svg?branch=master)](https://travis-ci.org/ben-marshall/verilog-parser/branches)
 [![Coverage Status](https://coveralls.io/repos/github/ben-marshall/verilog-parser/badge.svg?branch=master)](https://coveralls.io/github/ben-marshall/verilog-parser?branch=master)
 ![Licence: MIT](https://img.shields.io/badge/License-MIT-blue.svg)
 
-This repository contains a flex / bison parser for the IEEE 1364-2001 Verilog
+This repository was forked from [ben-marshall's verilog parser in C](https://github.com/mgwoo/verilog-parser.git). This project is target to modern C++.
+
 Standard.
 
 - [Getting Started](#getting-started)
@@ -146,28 +147,9 @@ almost exactly with it's namesake in the IEEE spec.
 ## Todo
 
 There are some things that the parser does not support:
+- Change c style -> c++ style (g++ does not compile the current code)
+- Implement Verilog Writer(with custom indent)
+- Support multiple module parsing
+- Static Library linking options
 
-- System-Verilog. Sorry folks, its another language completely. This parser
-  should serve as a very good starting point if you want to build one though,
-  since Verilog is a subset of System-Verilog.
-- System timing checks. See Annex 7.5.1 of the specification for what this
-  omits. It hopefully won't be long before I get round to adding it though.
 
-## Wishlist
-
-This is a wishlist of tools that I would like to use the parser in. If
-anyone else would like to use the parser as the basis for their own tools
-like this, I am more than happy to help!
-
-- A code indenter / style format checker.
-- A pre-processed source checker (expand macros and parameters, etc) for easy
-  browsing of generic logic blocks and cores.
-- Something to highlight when signals cross clock domains.
-- Critical path identifier (something which doesn't take 20 minuets to run on 
-  a grid engine) 
-- A switching probability analysis tool. 
-- This could even feed into a rough power & energy estimation tool. 
-- A simple hierarchy visualiser, which you can feed all your project files into 
-  and which will spit out a digested view of the module hierarchy. 
-- Proper Doxygen support for Verilog, or failing that, a 
-  [Doxygen like tool](https://github.com/ben-marshall/verilog-doc) for Verilog
