@@ -6,7 +6,7 @@
 [![Coverage Status](https://coveralls.io/repos/github/ben-marshall/verilog-parser/badge.svg?branch=master)](https://coveralls.io/github/ben-marshall/verilog-parser?branch=master)
 ![Licence: MIT](https://img.shields.io/badge/License-MIT-blue.svg)
 
-This repository was forked from [ben-marshall's verilog parser in C](https://github.com/ben-marshall/verilog-parser.git). This project is target to modern C++.
+This repository was forked from [ben-marshall's verilog parser in C](https://github.com/ben-marshall/verilog-parser.git). This project is target to change C into modern C++ (i.e. modern g++ successfully can compile this project)
 
 - [Getting Started](#getting-started)
 - [Testing](#testing)
