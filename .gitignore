@@ -2,5 +2,11 @@
 *.vim
 *.o
 */**/*.o
+
+src/verilog_scanner.c
+src/verilog_parser.output
+src/verilog_parser.tab.c
+src/verilog_parser.tab.h
+
 build/
 tags
