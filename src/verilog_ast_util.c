@@ -23,7 +23,7 @@ ast_module_declaration * verilog_find_module_declaration(
     unsigned int m;
     for(m = 0; m < source -> modules -> items; m++)
     {
-        ast_module_declaration * candidate = ast_list_get(source -> modules,m);
+        ast_module_declaration * candidate = (ast_module_declaration*)ast_list_get(source -> modules,m);
 
         if(ast_identifier_cmp(module_name, candidate -> identifier) == 0)
         {
@@ -51,7 +51,7 @@ void verilog_resolve_modules(
     unsigned int m;
     for(m = 0; m < source -> modules -> items; m++)
     {
-        ast_module_declaration * module = ast_list_get(source -> modules, m);
+        ast_module_declaration * module = (ast_module_declaration*)ast_list_get(source -> modules, m);
         
         assert(module != NULL);
 
@@ -70,7 +70,7 @@ void verilog_resolve_modules(
         for(sm = 0; sm < module -> module_instantiations -> items; sm ++)
         {
             ast_module_instantiation * submod = 
-                            ast_list_get(module -> module_instantiations, sm);
+                            (ast_module_instantiation*)ast_list_get(module -> module_instantiations, sm);
             
             if(submod -> resolved)
             {
@@ -115,13 +115,13 @@ ast_list * verilog_module_get_children(
     for(m = 0; m < module -> module_instantiations -> items; m++)
     {
         ast_module_instantiation * child = 
-                            ast_list_get(module -> module_instantiations, m);
+                            (ast_module_instantiation*)ast_list_get(module -> module_instantiations, m);
 
         unsigned int c;
         unsigned char added_already = 0;
         for(c = 0; c < tr -> items; c++)
         {
-            ast_module_instantiation * maybe = ast_list_get(tr,c);
+            ast_module_instantiation * maybe = (ast_module_instantiation*)ast_list_get(tr,c);
             ast_identifier i1, i2;
             if(maybe -> resolved)
                 i1 = maybe -> declaration -> identifier;
@@ -170,7 +170,7 @@ ast_hashtable * verilog_modules_get_children(
     unsigned int m;
     for(m = 0; m < source -> modules -> items; m++)
     {
-        ast_module_declaration * module = ast_list_get(source -> modules, m);
+        ast_module_declaration * module = (ast_module_declaration*)ast_list_get(source -> modules, m);
 
         ast_list * children = verilog_module_get_children(module);
 

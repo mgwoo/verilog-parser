@@ -44,7 +44,7 @@ void * ast_calloc(size_t num, size_t size)
     // Add the allocated memory to tracking data structure.
     if(walker == NULL)
     {
-        memory_head = calloc(1,sizeof(ast_memory));
+        memory_head = (ast_memory*)calloc(1,sizeof(ast_memory));
         memory_head -> size = num * size;
         total_allocated += memory_head -> size;
         memory_head -> data = data;
@@ -53,7 +53,7 @@ void * ast_calloc(size_t num, size_t size)
     } 
     else
     {
-        walker -> next = calloc(1,sizeof(ast_memory));
+        walker -> next = (ast_memory*)calloc(1,sizeof(ast_memory));
         walker -> next -> size = num * size;
         total_allocated += walker -> size;
         walker -> next -> data = data;
@@ -97,7 +97,7 @@ void ast_free_all()
 char * ast_strdup(char * in)
 {
     size_t len = strlen(in);
-    char * tr = ast_calloc(len+1,sizeof(char));
+    char * tr = (char*)ast_calloc(len+1,sizeof(char));
     memcpy(tr,in,len);
     return tr;
 }

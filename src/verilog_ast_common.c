@@ -17,7 +17,7 @@
 */
 ast_list * ast_list_new ()
 {
-    ast_list * tr = ast_calloc(1, sizeof(ast_list));
+    ast_list * tr = (ast_list*)ast_calloc(1, sizeof(ast_list));
     tr -> head          = NULL;
     tr -> tail          = NULL;
     tr -> walker        = NULL;
@@ -60,7 +60,7 @@ void       ast_list_append(ast_list * list, void * data)
 {
     if(list -> items == 0)
     {
-        list -> head         = ast_calloc(1,sizeof(ast_list_element));
+        list -> head         = (ast_list_element*)ast_calloc(1,sizeof(ast_list_element));
         list -> head -> next = NULL;
         list -> head -> data = data;
 
@@ -71,7 +71,7 @@ void       ast_list_append(ast_list * list, void * data)
     }
     else
     {
-        list -> tail -> next = ast_calloc(1, sizeof(ast_list_element));
+        list -> tail -> next = (ast_list_element*)ast_calloc(1, sizeof(ast_list_element));
         list -> tail = list -> tail -> next;
         list -> tail -> data = data;
 
@@ -125,7 +125,7 @@ void       ast_list_preappend(ast_list * list, void * data)
 {
     if(list -> items == 0)
     {
-        list -> head         = ast_calloc(1,sizeof(ast_list_element));
+        list -> head         = (ast_list_element*)ast_calloc(1,sizeof(ast_list_element));
         list -> head -> next = NULL;
         list -> head -> data = data;
 
@@ -136,7 +136,7 @@ void       ast_list_preappend(ast_list * list, void * data)
     }
     else
     {
-        ast_list_element * to_add = ast_calloc(1, sizeof(ast_list_element));
+        ast_list_element * to_add = (ast_list_element*)ast_calloc(1, sizeof(ast_list_element));
         to_add -> data = data;
 
         to_add -> next = list -> head;
@@ -274,7 +274,7 @@ ast_list *    ast_list_concat(ast_list * head, ast_list * tail)
 @brief Creates and returns a new stack object.
 */
 ast_stack * ast_stack_new(){
-    ast_stack * tr = ast_calloc(1,sizeof(ast_stack));
+    ast_stack * tr = (ast_stack*)ast_calloc(1,sizeof(ast_stack));
     tr -> depth = 0;
     return tr;
 }
@@ -307,12 +307,12 @@ void ast_stack_push(
 
     if(stack -> items == NULL)
     {
-        stack -> items = ast_calloc(1,sizeof(ast_stack_element));
+        stack -> items = (ast_stack_element*)ast_calloc(1,sizeof(ast_stack_element));
         stack -> items -> data = item;
     } 
     else
     {
-        ast_stack_element * toadd = ast_calloc(1,sizeof(ast_stack_element));
+        ast_stack_element * toadd = (ast_stack_element*)ast_calloc(1,sizeof(ast_stack_element));
         toadd -> data = item;
         toadd -> next = stack -> items;
         stack -> items = toadd;
@@ -396,7 +396,7 @@ void * ast_stack_peek2(
 
 //! Creates and returns a new hashtable.
 ast_hashtable * ast_hashtable_new(){
-    ast_hashtable * tr = ast_calloc(1,sizeof(ast_hashtable));
+    ast_hashtable * tr = (ast_hashtable*)ast_calloc(1,sizeof(ast_hashtable));
 
     tr -> size = 0;
     tr -> elements = ast_list_new();
@@ -425,7 +425,7 @@ ast_hashtable_result ast_hashtable_insert(
     unsigned int i;
     for(i = 0; i < table -> elements -> items; i ++)
     {
-        ast_hashtable_element * e = ast_list_get(table->elements, i);
+        ast_hashtable_element * e = (ast_hashtable_element*)ast_list_get(table->elements, i);
         if(e != NULL)
         {
             if(strcmp(e -> key , key) == 0){
@@ -433,7 +433,7 @@ ast_hashtable_result ast_hashtable_insert(
             }
         }
     }
-    ast_hashtable_element * toinsert = ast_calloc(1,sizeof(ast_hashtable_element));
+    ast_hashtable_element * toinsert = (ast_hashtable_element*)ast_calloc(1,sizeof(ast_hashtable_element));
     toinsert -> key = key;
     toinsert -> data = value;
     ast_list_append(table -> elements, toinsert);;
@@ -450,7 +450,7 @@ ast_hashtable_result ast_hashtable_get(
     unsigned int i;
     for(i = 0; i < table -> elements -> items; i ++)
     {
-        ast_hashtable_element * e = ast_list_get(table->elements, i);
+        ast_hashtable_element * e = (ast_hashtable_element*)ast_list_get(table->elements, i);
         if(e != NULL)
         {
             if(strcmp(e -> key , key) == 0){
@@ -470,7 +470,7 @@ ast_hashtable_result ast_hashtable_delete(
     unsigned int i;
     for(i = 0; i < table -> elements -> items; i ++)
     {
-        ast_hashtable_element * e = ast_list_get(table->elements, i);
+        ast_hashtable_element * e = (ast_hashtable_element*)ast_list_get(table->elements, i);
         if(e != NULL)
         {
             if(strcmp(e -> key , key) == 0){
@@ -491,7 +491,7 @@ ast_hashtable_result ast_hashtable_update(
     unsigned int i;
     for(i = 0; i < table -> elements -> items; i ++)
     {
-        ast_hashtable_element * e = ast_list_get(table->elements, i);
+        ast_hashtable_element * e = (ast_hashtable_element*)ast_list_get(table->elements, i);
         if(strcmp(e -> key , key) == 0){
             e -> data = value;
             return HASH_SUCCESS;
