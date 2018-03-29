@@ -18,15 +18,11 @@ This repository was forked from [ben-marshall's verilog parser in C](https://git
 
 ## Getting Started
 
-This will get you going workspace wise.
+This will get you have c++ verilog parsing binary.
 
-    ```sh
-    $> make all
-    $> make test-all
-    ```
-
-This will download the test suite files, setup the build directory, and
-compile the parser, library and test app.
+    $ cd src/
+    $ make clean
+    $ make -j4
 
 To start using the parser in your own code, take a look at 
 [main.c](./src/main.c) which is a simple demonstration app used for testing
@@ -140,13 +136,14 @@ almost exactly with it's namesake in the IEEE spec.
 
 ---
 
+## Solved issue
 
+- Both of gcc/g++ now successfully compile this project (void ptr/extern variable/operator problem)
+- Added static library linking options. (libverilog\_parser.a)
+ 
 ## Todo
 
-There are some things that the parser does not support:
-- Change c style -> c++ style (g++ does not compile the current code)
 - Implement Verilog Writer(with custom indent)
-- Support multiple module parsing
-- Static Library linking options
+- Multiple module parsing support
 
 
