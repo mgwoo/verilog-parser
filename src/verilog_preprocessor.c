@@ -8,7 +8,7 @@
 verilog_preprocessor_context * verilog_new_preprocessor_context()
 {
     verilog_preprocessor_context * tr = 
-        ast_calloc(1,sizeof(verilog_preprocessor_context));
+        (verilog_preprocessor_context*)ast_calloc(1,sizeof(verilog_preprocessor_context));
 
     tr -> token_count    = 0;
     tr -> in_cell_define = AST_FALSE;
@@ -21,9 +21,11 @@ verilog_preprocessor_context * verilog_new_preprocessor_context()
     tr -> macrodefines   = ast_hashtable_new();
     tr -> ifdefs         = ast_stack_new();
     tr -> search_dirs    = ast_list_new();
+    
+    char* dirstr = "./";
 
     // By default, search CWD for include files.
-    ast_list_append(tr -> search_dirs,"./");
+    ast_list_append(tr -> search_dirs,(void*) dirstr);
 
     return tr;
 }
@@ -53,7 +55,7 @@ void verilog_preprocessor_set_file(
 char * verilog_preprocessor_current_file(
     verilog_preprocessor_context * preproc
 ){
-    return ast_stack_peek(preproc -> current_file);
+    return (char*)ast_stack_peek(preproc -> current_file);
 }
 
 
@@ -79,7 +81,7 @@ verilog_default_net_type * verilog_new_default_net_type(
     ast_net_type type           //!< The net type.
 ){
     verilog_default_net_type * tr = 
-        ast_calloc(1,sizeof(verilog_default_net_type));
+        (verilog_default_net_type*) ast_calloc(1,sizeof(verilog_default_net_type));
 
     tr -> token_number = token_number;
     tr -> line_number  = line_number;
@@ -141,7 +143,7 @@ verilog_include_directive * verilog_preprocessor_include(
     unsigned int lineNumber
 ){
     verilog_include_directive * toadd = 
-        ast_calloc(1,sizeof(verilog_include_directive));
+        (verilog_include_directive*)ast_calloc(1,sizeof(verilog_include_directive));
 
     filename = filename + 1; // Remove leading quote mark.
     size_t length = strlen(filename);
@@ -156,10 +158,10 @@ verilog_include_directive * verilog_preprocessor_include(
     unsigned int d = 0;
     for(d = 0; d < yy_preproc -> search_dirs -> items; d ++)
     {
-        char * dir       = ast_list_get(yy_preproc -> search_dirs, d);
+        char * dir       = (char*)ast_list_get(yy_preproc -> search_dirs, d);
         size_t dirlen    = strlen(dir)+1;
         size_t namelen   = strlen(toadd -> filename);
-        char * full_name = ast_calloc(dirlen+namelen, sizeof(char));
+        char * full_name = (char*)ast_calloc(dirlen+namelen, sizeof(char));
 
         strcat(full_name, dir);
         strcat(full_name, toadd -> filename);
@@ -196,7 +198,7 @@ void verilog_preprocessor_macro_define(
     size_t text_len     //!< Length in bytes of macro_text.
 ){
     verilog_macro_directive * toadd = 
-        ast_calloc(1, sizeof(verilog_macro_directive));
+        (verilog_macro_directive*)ast_calloc(1, sizeof(verilog_macro_directive));
     
     toadd -> line = line;
 
@@ -258,7 +260,7 @@ verilog_preprocessor_conditional_context *
     int           line_number         //!< Where the `ifdef came from.
 ){
     verilog_preprocessor_conditional_context * tr = 
-        ast_calloc(1,sizeof(verilog_preprocessor_conditional_context));
+        (verilog_preprocessor_conditional_context*)ast_calloc(1,sizeof(verilog_preprocessor_conditional_context));
 
     tr -> line_number = line_number;
     tr -> condition   = condition;
@@ -320,7 +322,7 @@ void verilog_preprocessor_ifdef (
 void verilog_preprocessor_elseif(char * macro_name, unsigned int lineno)
 {
     verilog_preprocessor_conditional_context * tocheck = 
-        ast_stack_peek(yy_preproc -> ifdefs);
+        (verilog_preprocessor_conditional_context*)ast_stack_peek(yy_preproc -> ifdefs);
 
     if(tocheck == NULL)
     {
@@ -362,10 +364,10 @@ void verilog_preprocessor_elseif(char * macro_name, unsigned int lineno)
 void verilog_preprocessor_else  (unsigned int lineno)
 {
     verilog_preprocessor_conditional_context * tocheck = 
-        ast_stack_peek(yy_preproc -> ifdefs);
+        (verilog_preprocessor_conditional_context*)ast_stack_peek(yy_preproc -> ifdefs);
 
     verilog_preprocessor_conditional_context * parent = 
-        ast_stack_peek2(yy_preproc -> ifdefs);
+        (verilog_preprocessor_conditional_context*) ast_stack_peek2(yy_preproc -> ifdefs);
 
     if(tocheck == NULL)
     {
@@ -411,7 +413,7 @@ void verilog_preprocessor_else  (unsigned int lineno)
 void verilog_preprocessor_endif (unsigned int lineno)
 {
     verilog_preprocessor_conditional_context * tocheck = 
-        ast_stack_pop(yy_preproc -> ifdefs);
+        (verilog_preprocessor_conditional_context*)ast_stack_pop(yy_preproc -> ifdefs);
 
     if(tocheck == NULL)
     {
@@ -420,7 +422,7 @@ void verilog_preprocessor_endif (unsigned int lineno)
         return;
     }
 
-    tocheck = ast_stack_peek(yy_preproc -> ifdefs);
+    tocheck =(verilog_preprocessor_conditional_context*) ast_stack_peek(yy_preproc -> ifdefs);
 
     if(tocheck == NULL)
         yy_preproc -> emit = AST_TRUE;

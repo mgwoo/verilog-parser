@@ -10,6 +10,8 @@ Syntax Tree (AST)
 #include "verilog_ast.h"
 #include "verilog_preprocessor.h"
 
+ast_metadata meta;
+
 /*!
 @brief Responsible for setting the line number and file of each node's
 meta data member.

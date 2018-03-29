@@ -80,7 +80,7 @@
     ast_net_type                   net_type;
     ast_node                     * node;
     ast_node_attributes          * node_attributes;
-    ast_operator                   operator;
+    ast_operator                   input_operator;
     ast_parameter_declarations   * parameter_declaration;
     ast_parameter_type             parameter_type;
     ast_pass_enable_switch       * pass_enable_switch   ;
@@ -182,37 +182,37 @@
 
 /* Operators Precedence */
 
-%token <operator> STAR
-%token <operator> PLUS
-%token <operator> MINUS
-%token <operator> ASL     
-%token <operator> ASR     
-%token <operator> LSL     
-%token <operator> LSR     
-%token <operator> DIV     
-%token <operator> POW     
-%token <operator> MOD     
-%token <operator> GTE     
-%token <operator> LTE     
-%token <operator> GT      
-%token <operator> LT      
-%token <operator> L_NEG   
-%token <operator> L_AND   
-%token <operator> L_OR    
-%token <operator> C_EQ    
-%token <operator> L_EQ    
-%token <operator> C_NEQ   
-%token <operator> L_NEQ   
-%token <operator> B_NEG   
-%token <operator> B_AND   
-%token <operator> B_OR    
-%token <operator> B_XOR   
-%token <operator> B_EQU   
-%token <operator> B_NAND  
-%token <operator> B_NOR   
-%token <operator> TERNARY 
+%token <input_operator> STAR
+%token <input_operator> PLUS
+%token <input_operator> MINUS
+%token <input_operator> ASL     
+%token <input_operator> ASR     
+%token <input_operator> LSL     
+%token <input_operator> LSR     
+%token <input_operator> DIV     
+%token <input_operator> POW     
+%token <input_operator> MOD     
+%token <input_operator> GTE     
+%token <input_operator> LTE     
+%token <input_operator> GT      
+%token <input_operator> LT      
+%token <input_operator> L_NEG   
+%token <input_operator> L_AND   
+%token <input_operator> L_OR    
+%token <input_operator> C_EQ    
+%token <input_operator> L_EQ    
+%token <input_operator> C_NEQ   
+%token <input_operator> L_NEQ   
+%token <input_operator> B_NEG   
+%token <input_operator> B_AND   
+%token <input_operator> B_OR    
+%token <input_operator> B_XOR   
+%token <input_operator> B_EQU   
+%token <input_operator> B_NAND  
+%token <input_operator> B_NOR   
+%token <input_operator> TERNARY 
 
-%token <operator> UNARY_OP
+%token <input_operator> UNARY_OP
 
 /* Operator Precedence */
 
@@ -653,11 +653,11 @@
 %type   <number>                     init_val
 %type   <number>                     number
 %type   <number>                     unsigned_number
-%type   <operator>                   binary_module_path_operator
-%type   <operator>                   polarity_operator
-%type   <operator>                   polarity_operator_o
-%type   <operator>                   unary_module_path_operator
-%type   <operator>                   unary_operator
+%type   <input_operator>                   binary_module_path_operator
+%type   <input_operator>                   polarity_operator
+%type   <input_operator>                   polarity_operator_o
+%type   <input_operator>                   unary_module_path_operator
+%type   <input_operator>                   unary_operator
 %type   <parameter_declaration>      local_parameter_declaration
 %type   <parameter_declaration>      parameter_declaration
 %type   <parameter_declaration>      specparam_declaration
@@ -784,7 +784,7 @@ grammar_begin :
     unsigned int i;
     for(i  = 0; i < $1 -> items; i ++)
     {
-        ast_source_item * toadd = ast_list_get($1, i);
+        ast_source_item * toadd = (ast_source_item*) ast_list_get($1, i);
 
         if(toadd -> type == SOURCE_MODULE)
         {
@@ -1136,13 +1136,13 @@ port_declaration_l:
   net_type_o signed_o range_o port_identifier{
     ast_list * names = ast_list_new();
     ast_list_append(names, $4);
-    $$ = ast_new_port_declaration(PORT_NONE, $1, $2,
+    $$ = ast_new_port_declaration(PORT_NONE, $1, (ast_boolean)$2,
     AST_FALSE,AST_FALSE,NULL,names);
 }
 |            signed_o range_o port_identifier{
     ast_list * names = ast_list_new();
     ast_list_append(names, $3);
-    $$ = ast_new_port_declaration(PORT_NONE, NET_TYPE_NONE, $1,
+    $$ = ast_new_port_declaration(PORT_NONE, NET_TYPE_NONE, (ast_boolean)$1,
     AST_FALSE,AST_FALSE,NULL,names);
 }
 | KW_REG     signed_o range_o port_identifier eq_const_exp_o{
@@ -1399,7 +1399,7 @@ range_o  : range {$$=$1;}    | {$$=NULL;} ;
 
 local_parameter_declaration : 
   KW_LOCALPARAM signed_o range_o list_of_param_assignments SEMICOLON{
-    $$ = ast_new_parameter_declarations($4,$2,AST_TRUE,$3,PARAM_GENERIC);
+    $$ = ast_new_parameter_declarations($4,(ast_boolean)$2,AST_TRUE,$3,PARAM_GENERIC);
   }
 | KW_LOCALPARAM KW_INTEGER       list_of_param_assignments SEMICOLON{
     $$ = ast_new_parameter_declarations($3,AST_FALSE,AST_TRUE,NULL,
@@ -1421,7 +1421,7 @@ local_parameter_declaration :
 
 parameter_declaration : 
   KW_PARAMETER signed_o range_o list_of_param_assignments {
-    $$ = ast_new_parameter_declarations($4,$2,AST_FALSE,$3,PARAM_GENERIC);
+    $$ = ast_new_parameter_declarations($4,(ast_boolean)$2,AST_FALSE,$3,PARAM_GENERIC);
   }
 | KW_PARAMETER KW_INTEGER       list_of_param_assignments {
     $$ = ast_new_parameter_declarations($3,AST_FALSE,AST_FALSE,NULL,
@@ -1455,23 +1455,23 @@ reg_o       : KW_REG   {$$=1;}| {$$=0;};
 
 inout_declaration : 
   KW_INOUT net_type_o signed_o range_o list_of_port_identifiers{
-$$ = ast_new_port_declaration(PORT_INOUT, $2,$3,AST_FALSE,AST_FALSE,$4,$5);
+$$ = ast_new_port_declaration(PORT_INOUT, $2,(ast_boolean)$3,AST_FALSE,AST_FALSE,$4,$5);
   }
 ;
 
 input_declaration : 
   KW_INPUT net_type_o signed_o range_o list_of_port_identifiers{
-$$ = ast_new_port_declaration(PORT_INPUT, $2,$3,AST_FALSE,AST_FALSE,$4,$5);
+$$ = ast_new_port_declaration(PORT_INPUT, $2,(ast_boolean)$3,AST_FALSE,AST_FALSE,$4,$5);
   }
 ;
 
 output_declaration: 
   KW_OUTPUT net_type_o signed_o range_o list_of_port_identifiers{
-$$ = ast_new_port_declaration(PORT_OUTPUT, $2,$3,AST_FALSE,AST_FALSE,$4,$5);
+$$ = ast_new_port_declaration(PORT_OUTPUT, $2,(ast_boolean)$3,AST_FALSE,AST_FALSE,$4,$5);
   }
 | KW_OUTPUT reg_o signed_o range_o list_of_port_identifiers{
 $$ = ast_new_port_declaration(PORT_OUTPUT,
-NET_TYPE_NONE,$3,$2,AST_FALSE,$4,$5);
+NET_TYPE_NONE,(ast_boolean)$3,(ast_boolean)$2,AST_FALSE,$4,$5);
   }
 | KW_OUTPUT output_variable_type_o list_of_port_identifiers{
     $$ = ast_new_port_declaration(PORT_OUTPUT, NET_TYPE_NONE,
@@ -1492,7 +1492,7 @@ NET_TYPE_NONE,$3,$2,AST_FALSE,$4,$5);
 | KW_OUTPUT KW_REG signed_o range_o list_of_variable_port_identifiers{
     $$ = ast_new_port_declaration(PORT_OUTPUT,
                                   NET_TYPE_NONE,
-                                  $3, AST_TRUE,
+                                  (ast_boolean)$3, AST_TRUE,
                                   AST_FALSE,
                                   $4, $5);
   }
@@ -1974,12 +1974,12 @@ automatic_o         : KW_AUTOMATIC {$$=AST_TRUE;} | {$$=AST_FALSE;};
 function_declaration : 
   KW_FUNCTION automatic_o signed_o range_or_type_o function_identifier
   SEMICOLON function_item_declarations function_statement KW_ENDFUNCTION{
-    $$ = ast_new_function_declaration($2,$3,AST_TRUE,$4,$5,$7,$8);
+    $$ = ast_new_function_declaration((ast_boolean)$2,(ast_boolean)$3,AST_TRUE,$4,$5,$7,$8);
   }
 | KW_FUNCTION automatic_o signed_o range_or_type_o function_identifier
   OPEN_BRACKET function_port_list CLOSE_BRACKET SEMICOLON
   block_item_declarations function_statement KW_ENDFUNCTION{
-    $$ = ast_new_function_declaration($2,$3,AST_FALSE,$4,$5,$10,$11);
+    $$ = ast_new_function_declaration((ast_boolean)$2,(ast_boolean)$3,AST_FALSE,$4,$5,$10,$11);
   }
 ;
 
@@ -2065,11 +2065,11 @@ range_or_type              :
 task_declaration    : 
   KW_TASK automatic_o task_identifier SEMICOLON task_item_declarations 
   statement KW_ENDTASK{
-    $$ = ast_new_task_declaration($2,$3,NULL,$5,$6);
+    $$ = ast_new_task_declaration((ast_boolean)$2,$3,NULL,$5,$6);
   }
 | KW_TASK automatic_o task_identifier OPEN_BRACKET task_port_list 
   CLOSE_BRACKET SEMICOLON block_item_declarations statement KW_ENDTASK{
-    $$ = ast_new_task_declaration($2,$3,$5,$8,$9);
+    $$ = ast_new_task_declaration((ast_boolean)$2,$3,$5,$8,$9);
   }
 ;
 
@@ -2127,7 +2127,7 @@ task_port_item  :
 
 tf_input_declaration : 
   KW_INPUT reg_o signed_o range_o list_of_port_identifiers{
-    $$ = ast_new_task_port(PORT_INPUT, $2,$3,$4,PORT_TYPE_NONE,$5);
+    $$ = ast_new_task_port(PORT_INPUT, (ast_boolean)$2,(ast_boolean)$3,$4,PORT_TYPE_NONE,$5);
   }
 | KW_INPUT task_port_type_o list_of_port_identifiers{
     $$ = ast_new_task_port(PORT_INPUT,AST_FALSE,AST_FALSE,NULL,
@@ -2137,7 +2137,7 @@ tf_input_declaration :
 
 tf_output_declaration : 
   KW_OUTPUT reg_o signed_o range_o list_of_port_identifiers{
-    $$ = ast_new_task_port(PORT_OUTPUT, $2,$3,$4,PORT_TYPE_NONE,$5);
+    $$ = ast_new_task_port(PORT_OUTPUT, (ast_boolean)$2,(ast_boolean)$3,$4,PORT_TYPE_NONE,$5);
   }
 | KW_OUTPUT task_port_type_o list_of_port_identifiers{
     $$ = ast_new_task_port(PORT_OUTPUT,AST_FALSE,AST_FALSE,NULL,
@@ -2147,7 +2147,7 @@ tf_output_declaration :
 
 tf_inout_declaration : 
   KW_INOUT reg_o signed_o range_o list_of_port_identifiers{
-    $$ = ast_new_task_port(PORT_INOUT, $2,$3,$4,PORT_TYPE_NONE,$5);
+    $$ = ast_new_task_port(PORT_INOUT, (ast_boolean)$2,(ast_boolean)$3,$4,PORT_TYPE_NONE,$5);
   }
 | KW_INOUT task_port_type_o list_of_port_identifiers{
     $$ = ast_new_task_port(PORT_INOUT,AST_FALSE,AST_FALSE,NULL,
@@ -2202,7 +2202,7 @@ block_item_declaration :
 
 block_reg_declaration : 
   KW_REG signed_o range_o list_of_block_variable_identifiers SEMICOLON{
-    $$ = ast_new_block_reg_declaration($2,$3,$4);
+    $$ = ast_new_block_reg_declaration((ast_boolean)$2,$3,$4);
   }
 ;
 
@@ -2321,20 +2321,20 @@ n_output_gate_instance  :
 
 gate_enable : 
   enable_gatetype enable_gate_instances{
-    $$ = ast_new_enable_gate_instances($1,NULL,NULL,$2);
+    $$ = ast_new_enable_gate_instances((ast_gatetype_n_input)$1,NULL,NULL,$2);
 }
 | enable_gatetype OB drive_strength delay2 enable_gate_instances{
-    $$ = ast_new_enable_gate_instances($1,NULL,NULL,$5);
+    $$ = ast_new_enable_gate_instances((ast_gatetype_n_input)$1,NULL,NULL,$5);
 }
 | enable_gatetype OB drive_strength enable_gate_instances{
-    $$ = ast_new_enable_gate_instances($1,NULL,$3,$4);
+    $$ = ast_new_enable_gate_instances((ast_gatetype_n_input)$1,NULL,$3,$4);
 }
 | enable_gatetype OB output_terminal COMMA input_terminal COMMA 
   enable_terminal CB COMMA n_output_gate_instances{
     ast_enable_gate_instance * gate = ast_new_enable_gate_instance(
         ast_new_identifier("unamed_gate",yylineno), $3,$7,$5);
     ast_list_preappend($10,gate);
-    $$ = ast_new_enable_gate_instances($1,NULL,NULL,$10);
+    $$ = ast_new_enable_gate_instances((ast_gatetype_n_input)$1,NULL,NULL,$10);
 }
 | enable_gatetype OB output_terminal COMMA input_terminal COMMA 
   enable_terminal CB{
@@ -2342,10 +2342,10 @@ gate_enable :
         ast_new_identifier("unamed_gate",yylineno), $3,$7,$5);
     ast_list * list = ast_list_new();
     ast_list_append(list,gate);
-    $$ = ast_new_enable_gate_instances($1,NULL,NULL,list);
+    $$ = ast_new_enable_gate_instances((ast_gatetype_n_input)$1,NULL,NULL,list);
 }
 | enable_gatetype delay3 enable_gate_instances{
-    $$ = ast_new_enable_gate_instances($1,$2,NULL,$3);
+    $$ = ast_new_enable_gate_instances((ast_gatetype_n_input)$1,$2,NULL,$3);
 }
 ;
 
@@ -2759,7 +2759,7 @@ expression_o : expression {$$=$1;}
 /* A.4.2 Generated instantiation */
 
 generated_instantiation : KW_GENERATE generate_items KW_ENDGENERATE {
-    char * id = calloc(25,sizeof(char));
+    char * id = (char*)calloc(25,sizeof(char));
     sprintf(id,"gen_%d",yylineno);
     ast_identifier new_id = ast_new_identifier(id,yylineno);
     $$ = ast_new_generate_block(new_id,$2);
@@ -2861,7 +2861,7 @@ genvar_assignment : genvar_identifier EQ constant_expression{
 
 generate_block : 
   KW_BEGIN generate_items KW_END{
-    char * id = calloc(25,sizeof(char));
+    char * id = (char*)calloc(25,sizeof(char));
     sprintf(id,"gen_%d",yylineno);
     ast_identifier new_id = ast_new_identifier(id,yylineno);
     $$ = ast_new_generate_block(new_id, $2);
@@ -3405,7 +3405,7 @@ event_control :
     ast_primary * p = ast_new_primary(PRIMARY_IDENTIFIER);
     p -> value.identifier = $2;
     ast_expression * id = ast_new_expression_primary(p);
-    ast_event_expression * ct = ast_new_event_expression(EVENT_CTRL_TRIGGERS,
+    ast_event_expression * ct = ast_new_event_expression((ast_edge)EVENT_CTRL_TRIGGERS,
         id);
     $$ = ast_new_event_control(EVENT_CTRL_TRIGGERS, ct);
   }

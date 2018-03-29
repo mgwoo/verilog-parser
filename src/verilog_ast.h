@@ -128,10 +128,16 @@ typedef char * ast_file;
 /*!
 @brief Stores "meta" information and other tagging stuff about nodes.
 */
+
 typedef struct ast_metadata_t{
     ast_line line;  //!< The line number the construct came from.
     ast_file file;  //!< The file the construct came from.
 } ast_metadata;
+
+//typedef struct ast_metadata_t{
+//    ast_line line;  //!< The line number the construct came from.
+//    ast_file file;  //!< The file the construct came from.
+//} ast_metadata;
 
 /*! @} */
 
@@ -1092,7 +1098,9 @@ typedef enum ast_event_expression_type_e{
 
 //! Describes a single event expression
 typedef struct ast_event_expression_t ast_event_expression;
-    ast_metadata    meta;   //!< Node metadata.
+
+extern ast_metadata    meta;   //!< Node metadata.
+
 struct ast_event_expression_t {
     ast_event_expression_type type;
     union{

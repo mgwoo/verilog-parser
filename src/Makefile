@@ -1,12 +1,12 @@
 EXE = parser
 
-CXX = gcc
+CXX = g++
 BISON = bison
 FLEX = flex
 
 CXXOPTS = -m64 -O3 -fPIC -mtune=native -march=native -fno-strict-aliasing -fexceptions -DNDEBUG -DIL_STD -Wno-ctor-dtor-privacy -fno-permissive
 
-CFLAGS =  -O3 -fPIC -mtune=native -march=native -g -ggdb -DNDEBUG
+CFLAGS =  -O3 -fPIC -mtune=native -march=native -g -ggdb -DNDEBUG -fno-permissive
 
 
 # linking flag settings
