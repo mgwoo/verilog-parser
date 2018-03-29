@@ -11,7 +11,9 @@
     #include <string.h>
     #include <assert.h>
 
+    #include "verilog_global.h" 
     #include "verilog_ast.h"
+
 
     extern int yylex();
     extern int yylineno;
@@ -21,10 +23,14 @@
         printf("line %d - ERROR: %s\n", yylineno,msg);
         printf("- '%s'\n", yytext);
     }
+    
+    
+    NAMESPACE_VERILOG_USING
 %}
 
 %code requires{
     #include "verilog_ast.h"
+    NAMESPACE_VERILOG_USING
 }
 
 

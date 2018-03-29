@@ -8,10 +8,13 @@
 #include "stdlib.h"
 #include "string.h"
 
+#include "verilog_global.h"
 #include "verilog_ast_mem.h"
 
 #ifndef VERILOG_AST_COMMON_H
 #define VERILOG_AST_COMMON_H
+
+NAMESPACE_VERILOG_BEGIN
 
 
 // --------------- Linked List ------------------------
@@ -252,5 +255,7 @@ ast_hashtable_result ast_hashtable_update(
     char          * key,   //!< The key to update with.
     void          * value  //!< The new data item to update.
 );
+
+NAMESPACE_VERILOG_END
 
 #endif

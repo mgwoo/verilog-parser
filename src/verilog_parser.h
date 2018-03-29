@@ -9,8 +9,11 @@ as well as an easy way to change the input stream.
 
 #include "stdio.h"
 
+#include "verilog_global.h"
+
 // Essential to make sure we have access to all of the yy functions.
 #include "verilog_preprocessor.h"
+
 
 #ifndef H_VERILOG_PARSER
 #define H_VERILOG_PARSER
@@ -30,6 +33,8 @@ extern YY_BUFFER_STATE yy_create_buffer (FILE *file,int size  );
 extern YY_BUFFER_STATE yy_scan_buffer (char *base,yy_size_t size  );
 extern YY_BUFFER_STATE yy_scan_bytes (const char *bytes,int len  );
 extern void yy_delete_buffer (YY_BUFFER_STATE b  );
+
+NAMESPACE_VERILOG_BEGIN
 
 /*!
 @defgroup parser-api Verilog Parser API
@@ -162,5 +167,7 @@ the second will not.
 int     verilog_parse_buffer(char * to_parse, int length);
 
 /*! }@ */
+
+NAMESPACE_VERILOG_END
 
 #endif

@@ -7,8 +7,11 @@ Syntax Tree (AST)
 #include <assert.h>
 #include <stdio.h>
 
+#include "verilog_global.h"
 #include "verilog_ast.h"
 #include "verilog_preprocessor.h"
+
+NAMESPACE_VERILOG_BEGIN
 
 ast_metadata meta;
 
@@ -2931,3 +2934,5 @@ void verilog_free_source_tree(
 ){
     printf("ERROR: Function not implemented. Source tree at %p not freed.\n", tofree);
 }
+
+NAMESPACE_VERILOG_END

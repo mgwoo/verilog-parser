@@ -1,11 +1,18 @@
 %{
+    #include "verilog_global.h"
     #include "verilog_ast.h"
     #include "verilog_parser.tab.h"
     
     #include "verilog_preprocessor.h"
 
+    NAMESPACE_VERILOG_USING
+
+    NAMESPACE_VERILOG_BEGIN
+   
     //! Stores all information needed for the preprocessor.
     verilog_preprocessor_context * yy_preproc;
+
+    NAMESPACE_VERILOG_END
 
     #define EMIT_TOKEN(x) yy_preproc -> token_count ++; \
                           if(yy_preproc -> emit) {      \

@@ -6,9 +6,13 @@
 
 #include "verilog_ast.h"
 #include "verilog_parser.h"
+#include "verilog_global.h"
+
+extern int yyparse();
+
+NAMESPACE_VERILOG_BEGIN
 
 //! This is defined in the generated bison parser code.
-extern int yyparse();
 
 void    verilog_parser_init()
 {
@@ -61,3 +65,5 @@ int     verilog_parse_buffer(char * to_parse, int length)
     int result = yyparse();
     return result;
 }
+
+NAMESPACE_VERILOG_END

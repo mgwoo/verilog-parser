@@ -8,11 +8,14 @@
 #include <stdio.h>
 #include <stdlib.h>
 
+#include "verilog_global.h"
 #include "verilog_ast.h"
 #include "verilog_ast_common.h"
 
 #ifndef VERILOG_PREPROCESSOR_H
 #define VERILOG_PREPROCESSOR_H
+
+NAMESPACE_VERILOG_BEGIN
 
 /*!
 @defgroup verilog-preprocessor Preprocessor
@@ -281,6 +284,7 @@ void verilog_preproc_default_net(
 );
 
 /*! @} */
+NAMESPACE_VERILOG_END
 
 #endif
 

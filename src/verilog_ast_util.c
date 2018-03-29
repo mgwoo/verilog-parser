@@ -7,8 +7,10 @@
 #include <assert.h>
 #include <stdio.h>
 
+#include "verilog_global.h"
 #include "verilog_ast_util.h"
 
+NAMESPACE_VERILOG_BEGIN
 
 /*!
 @brief Searches the list of modules in the parsed source tree, returning the
@@ -181,3 +183,5 @@ ast_hashtable * verilog_modules_get_children(
 
     return tr;
 }
+
+NAMESPACE_VERILOG_END

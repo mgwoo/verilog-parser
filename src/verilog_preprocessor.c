@@ -4,6 +4,10 @@
 */
 
 #include "verilog_preprocessor.h"
+#include "verilog_global.h"
+
+NAMESPACE_VERILOG_BEGIN
+
 
 verilog_preprocessor_context * verilog_new_preprocessor_context()
 {
@@ -431,4 +435,4 @@ void verilog_preprocessor_endif (unsigned int lineno)
 }
 
 
-
+NAMESPACE_VERILOG_END

@@ -10,7 +10,10 @@
 #include "string.h"
 #include "stdio.h"
 
+#include "verilog_global.h"
 #include "verilog_ast_common.h"
+
+NAMESPACE_VERILOG_BEGIN
 
 /*!
 @brief Creates and returns a pointer to a new linked list.
@@ -499,3 +502,5 @@ ast_hashtable_result ast_hashtable_update(
     }
     return HASH_KEY_NOT_FOUND;
 }
+
+NAMESPACE_VERILOG_END

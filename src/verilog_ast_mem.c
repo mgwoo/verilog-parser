@@ -3,8 +3,10 @@
 @brief Contains definitions of datastructures and functions for helping to
 manage dynamic memory allocation within the library.
 */
-
+#include "verilog_global.h"
 #include "verilog_ast_mem.h"
+
+NAMESPACE_VERILOG_BEGIN
 
 /*!
 @defgroup ast-utility-mem-manage Memory Management
@@ -103,4 +105,4 @@ char * ast_strdup(char * in)
 }
 
 /*!@}*/
-
+NAMESPACE_VERILOG_END

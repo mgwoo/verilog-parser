@@ -7,10 +7,13 @@
 #include <assert.h>
 #include <stdio.h>
 
+#include "verilog_global.h"
 #include "verilog_ast.h"
 
 #ifndef VERILOG_AST_UTIL_H
 #define VERILOG_AST_UTIL_H
+
+NAMESPACE_VERILOG_BEGIN
 
 /*!
 @defgroup ast-utility-modules Module Resoloution & Searching
@@ -70,5 +73,7 @@ ast_hashtable * verilog_modules_get_children(
 );
 
 /*! @} */
+
+NAMESPACE_VERILOG_END
 
 #endif

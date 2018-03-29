@@ -8,12 +8,18 @@
 #include <stdlib.h>
 #include <string.h>
 
+#include "verilog_global.h"
 #include "verilog_ast_common.h"
 
 #ifndef VERILOG_AST_H
 #define VERILOG_AST_H
 
+
 extern int yylineno;
+
+NAMESPACE_VERILOG_BEGIN
+
+
 
 //! Forward declare. Defines the core node type for the AST.
 typedef struct ast_node_t ast_node;
@@ -3339,9 +3345,9 @@ struct ast_node_t
 @deprecated The AST Node was only ever temporary, don't add new stuff with it.
 */
 ast_node * ast_node_new();
-
-
 /*! @} */
+
+NAMESPACE_VERILOG_END
 
 
 #endif

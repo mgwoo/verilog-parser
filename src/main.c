@@ -5,10 +5,13 @@
 
 #include "stdio.h"
 
+#include "verilog_global.h"
 #include "verilog_parser.h"
 #include "verilog_ast_common.h"
 #include "verilog_preprocessor.h"
 #include "verilog_ast_util.h"
+
+NAMESPACE_VERILOG_USING
 
 int main(int argc, char ** argv)
 {
@@ -25,8 +28,8 @@ int main(int argc, char ** argv)
         verilog_parser_init();
 
         // Setup the preprocessor to look in ./tests/ for include files.
-        ast_list_append(yy_preproc -> search_dirs, "./tests/");
-        ast_list_append(yy_preproc -> search_dirs, "./");
+//        ast_list_append(yy_preproc -> search_dirs, "./tests/");
+//        ast_list_append(yy_preproc -> search_dirs, "./");
 
         for(F = 1; F < argc; F++)
         {

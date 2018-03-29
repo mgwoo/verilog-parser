@@ -9,8 +9,12 @@ manage dynamic memory allocation within the library.
 #include <stdlib.h>
 #include <string.h>
 
+#include "verilog_global.h"
+
 #ifndef VERILOG_AST_MEM_H
 #define VERILOG_AST_MEM_H
+
+NAMESPACE_VERILOG_BEGIN
 
 //! Typedef over ast_memory_T
 typedef struct ast_memory_t ast_memory;
@@ -41,6 +45,7 @@ using the @ref ast_free_all function.
 */
 void * ast_calloc(size_t num, size_t size);
 
+NAMESPACE_VERILOG_END
 
 
 #endif
