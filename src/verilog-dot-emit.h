@@ -7,9 +7,14 @@ data.
 #include <stdio.h>
 #include <stdlib.h>
 
+#include "verilog_global.h"
+#include "verilog_ast.h"
+
 #ifndef VERILOG_DOT_EMIT_H
 #define VERILOG_DOT_EMIT_H
 
+
+NAMESPACE_VERILOG_USING
 
 /*!
 @brief A container for all information on a single dot file being emitted.
@@ -21,6 +26,8 @@ typedef struct dot_file_t{
 
 //! Represents the unique ID of a node.
 typedef unsigned int dot_node;
+typedef ast_number dot_number;
+typedef ast_range dot_range;
 
 /*!
 @brief Creates and returns a new dot file object which can be written to.
@@ -64,6 +71,9 @@ void dot_emit_record_node(
 @brief Emits an edge between two pre-defined nodes.
 */
 void dot_emit_edge(dot_file * graph, dot_node id1, dot_node id2);
+
+void dot_emit_range( dot_file* graph, dot_range* range);
+void dot_emit_number( dot_file* graph, dot_number* number );
 
 /*!
 @brief Emits a directed edge between two pre-defined nodes.
