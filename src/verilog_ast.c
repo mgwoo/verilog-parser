@@ -6,6 +6,9 @@ Syntax Tree (AST)
 
 #include <assert.h>
 #include <stdio.h>
+#include <iostream>
+using namespace std;
+
 
 #include "verilog_global.h"
 #include "verilog_ast.h"
@@ -176,6 +179,20 @@ ast_primary * ast_new_primary(ast_primary_value_type type)
     return tr;
 }
 
+// deep copy function for ast_primary
+ast_primary* GetAstPrimaryDeepCopy(ast_primary* p) {
+    ast_primary* ret = (ast_primary*)calloc(1, sizeof(ast_primary));
+    ret -> primary_type = p->primary_type;
+    ret -> value_type = p->value_type;
+    switch(ret->value_type) {
+        case PRIMARY_NUMBER:
+            ret->value.number = (ast_number*) calloc(1, sizeof(ast_number));
+            ret->value.number->as_bits = strdup( p->value.number->as_bits); break;
+        // other cases not occur usually.
+    }
+    return ret;
+}
+
 /*!
 @brief Creates a new ast primary which is part of a constant expression tree
        with the supplied type and value.
@@ -199,6 +216,17 @@ primary instance for the purposes of mirroring the expression tree gramamr.
 Whether or not the expression is constant is denoted by the type member
 of the passed primary.
 */
+
+// 
+// mgwoo
+// fix bugs when gate_net_list have kinds of 'DIFF[23]' statement
+//
+// see also ast_new_named_port_connection !
+//
+static bool isFirst = true;
+static bool isChecker = true;
+static ast_primary* portNumberPtr = NULL;
+
 ast_expression * ast_new_expression_primary(ast_primary * p)
 {
     assert(sizeof(ast_expression) != 0);
@@ -215,8 +243,36 @@ ast_expression * ast_new_expression_primary(ast_primary * p)
     tr -> constant      = p -> primary_type == CONSTANT_PRIMARY ? AST_TRUE 
                                                                 : AST_FALSE;
 
+    // 
+    // this only occur Two times
+    //
+    // first : ast_number_type
+    // second : ast_identifier_type
+    //
+    if( isChecker ) {
+        if( isFirst  && p->value_type == PRIMARY_NUMBER ) {
+            isFirst = false;
+            portNumberPtr = GetAstPrimaryDeepCopy( p );
+            // cout << "TRUE!!!! so save " << p << "[" << ast_primary_tostring(p) << "] into portNumPtr" << endl;
+        }
+        else if ( !isFirst && p->value_type == PRIMARY_IDENTIFIER) {
+            // cout << "else case." << endl;
+            isChecker = false;
+            tr->right = ast_new_expression_primary( portNumberPtr );
+            isChecker = isFirst = true;
+
+            // cout << "False, !!!! so save previous " << portNumberPtr 
+            // << "[" << ast_primary_tostring(portNumberPtr) << "] into right " << endl;
+        }
+        else {
+            isFirst = true;
+        }
+    }
+
     return tr;
 }
+
+
 
 //! Returns the string representation of an operator;
 char * ast_operator_tostring(ast_operator op)
@@ -282,6 +338,14 @@ char * ast_expression_tostring(
         case PRIMARY_EXPRESSION:
         case MODULE_PATH_PRIMARY_EXPRESSION:
             tr = ast_primary_tostring(exp -> primary);
+            // added by mgwoo
+            if(exp->right) {
+                rhs = ast_expression_tostring(exp->right);
+                op = strdup("[");
+                strcat(tr, op);
+                strcat(tr, rhs);
+                free(op);
+            }
             break;
         case STRING_EXPRESSION:
             tr = ast_strdup(exp -> string);
@@ -1676,6 +1740,9 @@ ast_port_connection * ast_new_named_port_connection(
 
     tr -> port_name = port_name;
     tr -> expression = expression;
+   
+    // reset for parsing ast_new_expression_primary
+    isFirst = true;
 
     return tr;
 }
@@ -2858,7 +2925,7 @@ ast_number * ast_new_number(
 
     tr -> base = base;
     tr -> representation = representation;
-    tr -> as_bits = digits;
+    tr -> as_bits = strdup(digits); // modified by mgwoo
 
     return tr;
 }

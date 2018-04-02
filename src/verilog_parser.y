@@ -2756,6 +2756,7 @@ ordered_port_connection : attribute_instances expression_o{
 named_port_connection : 
   DOT port_identifier OPEN_BRACKET expression_o CLOSE_BRACKET {
     $$ = ast_new_named_port_connection($2,$4);
+//    fprintf(stdout, "port_ident[%x]:%s - express[%x]:%s\n\n", $2, ast_identifier_tostring($2), $4, ast_expression_tostring($4));
   }
 ;
 
@@ -4257,7 +4258,11 @@ constant_range_expression :
 
 expression :
   primary {
+//    if( $$ ) {
+//        fprintf( stdout, "already[%x]: %s\n", $$, ast_primary_tostring((ast_primary*)$$) );
+//    }
     $$ = ast_new_expression_primary($1);
+//    fprintf( stdout, "expr[%x]: %s\n", $$, ast_primary_tostring($1) );
   }
 | unary_operator attribute_instances primary{
     $$ = ast_new_unary_expression($3,$1,$2, AST_FALSE);
@@ -4449,6 +4454,7 @@ primary :
   number{
       $$ = ast_new_primary(PRIMARY_NUMBER);
       $$ -> value.number = $1;
+//      fprintf(stdout, "prim_number[%x]:%s\n", $$, ast_primary_tostring($$));
   }
 | function_call{
       $$ = ast_new_primary_function_call($1);
@@ -4484,6 +4490,7 @@ primary :
 | hierarchical_identifier{
       $$ = ast_new_primary(PRIMARY_IDENTIFIER);
       $$ -> value.identifier = $1;
+//      fprintf(stdout, "prim_ident[%x]:%s\n", $$, ast_primary_tostring($$));
   }
 | OPEN_BRACKET mintypmax_expression CLOSE_BRACKET{
       $$ = ast_new_primary(PRIMARY_MINMAX_EXP);

@@ -4,9 +4,9 @@ CXX = g++
 BISON = bison
 FLEX = flex
 
-CXXOPTS = -m64 -O3 -fPIC -mtune=native -march=native -fno-strict-aliasing -fexceptions -DNDEBUG -DIL_STD -Wno-ctor-dtor-privacy -fno-permissive
+CXXOPTS = -m64 -O3 -fPIC -mtune=native -march=native -fno-strict-aliasing -fexceptions -DIL_STD -Wno-ctor-dtor-privacy -fno-permissive
 
-CFLAGS =  -O3 -fPIC -mtune=native -march=native -g -ggdb -DNDEBUG -fno-permissive
+CFLAGS =  -O3 -fPIC -mtune=native -march=native -g -ggdb -fno-permissive
 
 
 # linking flag settings
@@ -17,20 +17,12 @@ DEBUG = -g -gstrict-dwarf -gdwarf-2
 .PHONY: all
 all: $(EXE) static
 
-$(EXE): verilog_ast.o verilog_ast_common.o verilog_ast_mem.o verilog_ast_util.o verilog_parser.tab.o verilog_parser_wrapper.o verilog_preprocessor.o verilog_scanner.o verilog-ast-walk.o verilog-dot-emit.o verilog-module-inherit.o main.o
+$(EXE): verilog_ast.o verilog_ast_common.o verilog_ast_mem.o verilog_ast_util.o verilog_parser.tab.o verilog_parser_wrapper.o verilog_preprocessor.o verilog_scanner.o verilog_writer.o main.o
 	$(CXX) $(DEBUG) $(CXXOPTS) $^ -o $@ $(LINKCFLAGS)
 
 # Verilog Traversing Module
-verilog-ast-walk.o: verilog-ast-walk.c verilog-ast-walk.h verilog_parser.h
+verilog_writer.o: verilog_writer.cpp verilog_writer.h verilog_parser.h
 	$(CXX) $(CFLAGS) -c -o $@ $<
-
-verilog-dot-emit.o: verilog-dot-emit.c verilog-dot-emit.h
-	$(CXX) $(CFLAGS) -c -o $@ $<
-	
-verilog-module-inherit.o: verilog-module-inherit.c verilog-dot-emit.h verilog-module-inherit.h verilog-dot.h verilog-ast-walk.h verilog_parser.h
-	$(CXX) $(CFLAGS) -c -o $@ $<
-
-
 
 # Verilog Parsing Module
 verilog_scanner.c: verilog_scanner.l verilog_parser.tab.c verilog_global.h
@@ -64,13 +56,13 @@ verilog_preprocessor.o: verilog_preprocessor.c verilog_preprocessor.h verilog_as
 verilog_scanner.o: verilog_scanner.c verilog_ast.h verilog_preprocessor.h verilog_global.h
 	$(CXX) $(CFLAGS) -c -o $@ $<
 
-main.o: main.c verilog_parser.h verilog_ast_common.h verilog_preprocessor.h verilog_ast_util.h verilog_global.h verilog-dot.h verilog-ast-walk.h verilog-dot-emit.h verilog-module-inherit.h
+main.o: main.cpp verilog_parser.h verilog_ast_common.h verilog_preprocessor.h verilog_ast_util.h verilog_global.h 
 	$(CXX) $(CFLAGS) -c -o $@ $<
 
 .PHONY: static
 static: libverilog_parser.a
 
-libverilog_parser.a: verilog_ast.o verilog_ast_common.o verilog_ast_mem.o verilog_ast_util.o verilog_parser.tab.o verilog_parser_wrapper.o verilog_preprocessor.o verilog_scanner.o verilog-ast-walk.o verilog-dot-emit.o verilog-module-inherit.o  
+libverilog_parser.a: verilog_ast.o verilog_ast_common.o verilog_ast_mem.o verilog_ast_util.o verilog_parser.tab.o verilog_parser_wrapper.o verilog_preprocessor.o verilog_scanner.o verilog_writer.o
 	ar rc $@ $^ 
 
 

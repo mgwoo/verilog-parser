@@ -26,7 +26,7 @@ verilog_preprocessor_context * verilog_new_preprocessor_context()
     tr -> ifdefs         = ast_stack_new();
     tr -> search_dirs    = ast_list_new();
     
-    char* dirstr = "./";
+    char dirstr[] = "./";
 
     // By default, search CWD for include files.
     ast_list_append(tr -> search_dirs,(void*) dirstr);
