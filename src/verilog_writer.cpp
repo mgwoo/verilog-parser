@@ -5,7 +5,7 @@ verilog source tree.
 */
 
 #define VERILOG_LINE_MAX 45
-#define CUSTOM_FPRINTF(fmt, ...) {if(fmt) {fprintf(fmt, ##__VA_ARGS__);}}
+#define CUSTOM_FPRINTF(fmt, ...) {if(fmt) {fprintf(fmt, ##__VA_ARGS__); fflush(stdout);}}
 
 
 #include <iostream>
@@ -24,28 +24,35 @@ using namespace std;
 
 NAMESPACE_VERILOG_BEGIN
 
-static int strBuffer = 200;
+static int strBuffer = 60;
 
-size_t PrintIdentifier( FILE* fout, ast_identifier& identifier ) {
+void LinePrint( FILE* fout, size_t& strCnt, size_t count ) {
+    strCnt += count; 
+    if( strCnt > strBuffer ) {
+        CUSTOM_FPRINTF( fout, "\n" );
+        CUSTOM_FPRINTF( fout, "       " );
+        strCnt = 7;
+    }
+}
+
+void PrintIdentifier( FILE* fout, ast_identifier& identifier, size_t& strSize ) {
     RaiseErrorForNull( identifier );
 
     char* getIdentifier = ast_identifier_tostring( identifier );
     CUSTOM_FPRINTF(fout, "%s", getIdentifier);
 
-    size_t cnt = strlen(getIdentifier);
+    strSize += strlen(getIdentifier);
     free(getIdentifier);
-
-    return cnt;
 }
 
-size_t PrintRangeNumber( FILE* fout, ast_number* number ) {
+void PrintRangeNumber( FILE* fout, ast_number* number, size_t& strSize ) {
     CUSTOM_FPRINTF(fout,  "%s", number->as_bits ); 
+    strSize += 2;
 }
 
 // this Part 'Must be' updated later
-size_t PrintNumber( FILE* fout, ast_number* number ) {
+void PrintNumber( FILE* fout, ast_number* number, size_t& strSize ) {
     RaiseErrorForNull( number );
-    size_t cnt = 0;
 
     switch( number->representation ) {
         // currently, only REP_BITS is used!!
@@ -60,7 +67,7 @@ size_t PrintNumber( FILE* fout, ast_number* number ) {
                 default: CUSTOM_FPRINTF( fout, "d"); break;
             }
             CUSTOM_FPRINTF( fout, "%s", number->as_bits );   
-            cnt += strlen(number->as_bits);
+            strSize += strlen(number->as_bits);
             break;
         // not used
         case REP_INTEGER: 
@@ -70,12 +77,11 @@ size_t PrintNumber( FILE* fout, ast_number* number ) {
             CUSTOM_FPRINTF( fout, "%f", number->as_float );
             break;
     }
-    cnt += 2;
-    return cnt;
+    strSize += 2;
 }
 
-size_t PrintExpression( FILE* fout, ast_expression* expression ) {
-    if( !expression ) { return 0; }
+void PrintExpression( FILE* fout, ast_expression* expression, size_t& strSize ) {
+    if( !expression ) { return; }
     RaiseErrorForNull( expression );
     
     char * tr;
@@ -85,12 +91,11 @@ size_t PrintExpression( FILE* fout, ast_expression* expression ) {
     char * cond;
     char * mid;
     char * op;
-    size_t len = 0;
 
     switch(expression -> type) {
         case PRIMARY_EXPRESSION:
         case MODULE_PATH_PRIMARY_EXPRESSION:
-            len += PrintPrimary(fout, expression -> primary);
+            PrintPrimary(fout, expression -> primary, strSize );
             // added by mgwoo
             if(expression->right) {
                 rhs = ast_expression_tostring(expression->right);
@@ -98,12 +103,12 @@ size_t PrintExpression( FILE* fout, ast_expression* expression ) {
                 strcat(op, rhs);
                 CUSTOM_FPRINTF(fout, "%s", op);
                 free(rhs);
-                len += strlen(op);
+                strSize += strlen(op) + 1;
             }
             break;
         case STRING_EXPRESSION:
             tr = ast_strdup(expression -> string);
-            len = strlen(tr);
+            strSize = strlen(tr);
             free(tr);
             break;
             /*
@@ -182,100 +187,69 @@ size_t PrintExpression( FILE* fout, ast_expression* expression ) {
             break;
             */
     }
-    return len;
-    
-    /*
-    size_t cnt = 0;
-    cout << "expression type: " << expression->type << endl;
-    if( expression->left ) {
-        cout << "LEFT" << endl;
-        cnt += PrintExpression( fout, expression->left );
-    }
-    switch( expression -> type ) {
-        case PRIMARY_EXPRESSION:
-            cnt += PrintPrimary( fout, expression->primary );
-            break;
-        // to be updated later
-    }
-    if( expression -> attributes ) {
-        exit(1);
-    }
-    if( expression->right ) {
-        cout << "RIGHT" << endl;
-        cnt += PrintExpression( fout, expression->right );
-    }
-    if( expression->aux) {
-        cout << "AUX" << endl;
-        cnt += PrintExpression( fout, expression->aux ) ;
-    
-    }
-    return cnt;
-    */
 }
 
-size_t PrintConcatenation( FILE* fout, ast_concatenation* concatenation ) {
+void PrintConcatenation( FILE* fout, ast_concatenation* concatenation, size_t& strSize ) {
     RaiseErrorForNull( concatenation );
-    size_t cnt = 0;
 //    cout << "concatenation type: " << concatenation->type << endl;
     switch( concatenation->type ) {
         case CONCATENATION_EXPRESSION:
         case CONCATENATION_CONSTANT_EXPRESSION:
-            cnt = 0;
-//            cout << "concatenation size: " << concatenation->items->items << endl;
-            cnt += PrintExpression( fout, concatenation->repeat );
+            PrintExpression( fout, concatenation->repeat, strSize );
             CUSTOM_FPRINTF( fout, ", " );
-            cnt += 2;
+            strSize += 2;
             for(int i=0; i< concatenation->items->items; i++) {
                 ast_expression* expr = (ast_expression*)ast_list_get( concatenation->items, i );
-                cnt += PrintExpression( fout, expr );
+                PrintExpression( fout, expr, strSize );
 
                 if( i != concatenation->items->items -1 ) {
                     CUSTOM_FPRINTF( fout, ", " );
-                    cnt += 2; 
+                    LinePrint( fout, strSize, 2 );
                 }
             }
-            return cnt;
+            break;
         case CONCATENATION_NET:
         case CONCATENATION_VARIABLE:
         case CONCATENATION_MODULE_PATH:
-            cnt = 0;
             for( int i=0; i< concatenation->items->items; i++) {
                 ast_identifier identifier = (ast_identifier)ast_list_get( concatenation->items, i );
                 char* getIdentifier = ast_identifier_tostring(identifier); 
                 fprintf( fout,"%s", getIdentifier );
-                cnt += strlen( getIdentifier );
+                strSize += strlen( getIdentifier );
                 free( getIdentifier );
             }
-            return cnt; 
+            break; 
     }
 }
 
-size_t PrintPrimary( FILE* fout, ast_primary* primary) {
+void PrintPrimary( FILE* fout, ast_primary* primary, size_t& strSize) {
     RaiseErrorForNull( primary );
     
-    size_t cnt = 0;
     char* tmpchar = NULL;
 //    cout << "primary type: " << primary->value_type << endl;
     switch( primary->value_type ) {
         case PRIMARY_NUMBER:        
-            return PrintNumber( fout, primary->value.number );
+            PrintNumber( fout, primary->value.number, strSize );
+            break;
         case PRIMARY_IDENTIFIER:    
-            return PrintIdentifier( fout, primary->value.identifier );  
+            PrintIdentifier( fout, primary->value.identifier, strSize );  
+            break;
         case PRIMARY_CONCATENATION:
-            cnt = 0;
             CUSTOM_FPRINTF( fout, "{" ); 
-            cnt += PrintConcatenation( fout, primary->value.concatenation );
+            strSize += 1;
+            PrintConcatenation( fout, primary->value.concatenation, strSize );
             CUSTOM_FPRINTF( fout, "}" );
-            cnt += 2; 
-            return cnt;
+            strSize += 1;
+            break;
         case PRIMARY_FUNCTION_CALL:
-            return PrintIdentifier( fout, primary->value.function_call -> function);  
+            PrintIdentifier( fout, primary->value.function_call -> function, strSize );  
+            break;
         case PRIMARY_MINMAX_EXP:
             tmpchar = ast_expression_tostring( primary->value.minmax );
             CUSTOM_FPRINTF( fout, "%s", tmpchar );
-            cnt = strlen(tmpchar);
+            strSize += strlen(tmpchar);
             free(tmpchar);
-            return cnt;
+            break;
         case PRIMARY_MACRO_USAGE:
         default: break;
     }
@@ -287,8 +261,9 @@ size_t PrintPrimary( FILE* fout, ast_primary* primary) {
 void PrintModule ( FILE* fout, ast_module_declaration  * module ) {
 
     // print module title
-//    FILE* fout = stdout;
-    CUSTOM_FPRINTF(fout, "module %s ( ", module -> identifier->identifier);
+    size_t strSize = 0;
+    CUSTOM_FPRINTF(fout, "\nmodule %s ( ", module -> identifier->identifier);
+    strSize += 10 + strlen(module->identifier->identifier); 
    
     int portCnt = module->module_ports->items; 
 
@@ -297,50 +272,44 @@ void PrintModule ( FILE* fout, ast_module_declaration  * module ) {
         int nameCnt = port->port_names->items;
         for(int j = 0; j < nameCnt; j++) {
             ast_identifier name = (ast_identifier)ast_list_get(port -> port_names, j);
-            PrintIdentifier( fout, name );
+            PrintIdentifier( fout, name, strSize );
             if( !(i == portCnt-1 && j == nameCnt-1) ) {
                 CUSTOM_FPRINTF(fout, ", ");
+                LinePrint( fout, strSize, 2 );
             }
         }
     }
     CUSTOM_FPRINTF(fout, " );\n");
    
     // print port information 
-    size_t strSize = 0;
     for(int i = 0; i < portCnt; i++) {
         strSize = 0;
         ast_port_declaration * port = (ast_port_declaration*)ast_list_get(module->module_ports,i);
         
         switch(port -> direction) {
-            case PORT_INPUT : CUSTOM_FPRINTF(fout, "  input ");     strSize += 8; break;
-            case PORT_OUTPUT: CUSTOM_FPRINTF(fout, "  output ");    strSize += 9; break;
-            case PORT_INOUT : CUSTOM_FPRINTF(fout, "  inout ");     strSize += 8; break;
-            case PORT_NONE  : CUSTOM_FPRINTF(fout, "  unknown ");   strSize += 10;break;
-            default         : CUSTOM_FPRINTF(fout, "  unknown ");   strSize += 10;break;
+            case PORT_INPUT : CUSTOM_FPRINTF(fout, "  input ");     strSize += 8;   break;    
+            case PORT_OUTPUT: CUSTOM_FPRINTF(fout, "  output ");    strSize += 9;   break;
+            case PORT_INOUT : CUSTOM_FPRINTF(fout, "  inout ");     strSize += 8;   break;  
+            case PORT_NONE  : CUSTOM_FPRINTF(fout, "  unknown ");   strSize += 10;  break;     
+            default         : CUSTOM_FPRINTF(fout, "  unknown ");   strSize += 10;  break;
         }
         
         if( port->range != NULL ) {
             CUSTOM_FPRINTF( fout, "[" );
-            strSize += 1;
-            strSize += PrintRangeNumber( fout, port->range->upper->primary->value.number );
-            // cout << port->range->upper->primary->value_type << endl;
-            strSize += PrintRangeNumber( fout, port->range->lower->primary->value.number );
+            PrintRangeNumber( fout, port->range->upper->primary->value.number, strSize );
+            PrintRangeNumber( fout, port->range->lower->primary->value.number, strSize );
             CUSTOM_FPRINTF( fout, " " );
-            strSize += 1;
+            strSize += 2;
         }
 
         int nameCnt = port->port_names->items;
         for(int j = 0; j < nameCnt; j++) {
             ast_identifier name = (ast_identifier)ast_list_get(port -> port_names, j);
 
-            strSize += PrintIdentifier( fout, name ); 
+            PrintIdentifier( fout, name, strSize ); 
             if( j != nameCnt-1) {
                 CUSTOM_FPRINTF(fout, ", ");
-            }
-
-            if( strSize > VERILOG_LINE_MAX ) {
-                CUSTOM_FPRINTF(fout, "\n       ");
-                strSize = 0;
+                LinePrint( fout, strSize, 2 );
             }
         }
         CUSTOM_FPRINTF(fout, ";\n");
@@ -349,25 +318,20 @@ void PrintModule ( FILE* fout, ast_module_declaration  * module ) {
    
     // print wire info 
     strSize = 0;
+
     int wireCnt = module->net_declarations->items;
     if( wireCnt > 0 ) {
         CUSTOM_FPRINTF(fout, "  wire ");
         strSize += 7;
-    }
-    for(int i = 0; i < wireCnt ; i++) {
-        ast_net_declaration* net = (ast_net_declaration*) ast_list_get(module->net_declarations, i);
-        strSize += PrintIdentifier( fout, net->identifier );
-        
-        if( i != wireCnt-1 ) {
-            CUSTOM_FPRINTF(fout, ", ");
-            strSize += 2;
+        for(int i = 0; i < wireCnt ; i++) {
+            ast_net_declaration* net = (ast_net_declaration*) ast_list_get(module->net_declarations, i);
+            PrintIdentifier( fout, net->identifier, strSize );
+            
+            if( i != wireCnt-1 ) {
+                CUSTOM_FPRINTF(fout, ", ");
+                LinePrint( fout, strSize, 2 );
+            }
         }
-        if( strSize > VERILOG_LINE_MAX ) {
-            CUSTOM_FPRINTF(fout, "\n       ");
-            strSize = 7;
-        }
-    }
-    if( wireCnt > 0 ) {
         CUSTOM_FPRINTF(fout, ";\n");
     }
 
@@ -382,51 +346,40 @@ void PrintModule ( FILE* fout, ast_module_declaration  * module ) {
 
             CUSTOM_FPRINTF( fout, "  " );
             strSize += 2;
-            strSize += PrintIdentifier( fout, module->identifier );
-            
-//            char* getIdentifier = ast_identifier_tostring( module->identifier );
-//            CUSTOM_FPRINTF( fout, "  %s", getIdentifier );
-//            free( getIdentifier );
-//            cout << "instCount: " << inst->module_instances->items << endl;
-//            cout << "paramCount: " << inst->module_parameters->items << endl;
+            PrintIdentifier( fout, module->identifier, strSize );
 
             for(int j=0; j < inst->module_instances->items; j++) {
                 ast_module_instance* curInst = (ast_module_instance*) 
                     ast_list_get( inst->module_instances, j);
                 
                 CUSTOM_FPRINTF(fout, " ");
-                strSize += 1;
-                
-                strSize += PrintIdentifier( fout, curInst-> instance_identifier );
+                PrintIdentifier( fout, curInst-> instance_identifier, strSize );
 
                 CUSTOM_FPRINTF(fout, " ( ");
-                strSize += 3;
+                strSize += 4;
                 
-                int numConnection = curInst->port_connections->items;
-//                cout << endl << "numConnection: " << numConnection << endl;
-                for(int k=0; k<numConnection; k++) {
-                    ast_port_connection* port = (ast_port_connection*) 
-                        ast_list_get( curInst->port_connections, k );
-                    CUSTOM_FPRINTF(fout, ".");
-                    PrintIdentifier( fout, port->port_name );
+                if( curInst->port_connections ) { 
+                    int numConnection = curInst->port_connections->items;
+                    for(int k=0; k<numConnection; k++) {
+                        ast_port_connection* port = (ast_port_connection*) 
+                            ast_list_get( curInst->port_connections, k );
+                        CUSTOM_FPRINTF(fout, ".");
+                        PrintIdentifier( fout, port->port_name, strSize );
 
-                    CUSTOM_FPRINTF(fout, "(");
-//                    PrintPrimary( fout, port->expression->primary );
-                    PrintExpression( fout, port->expression );
-                    CUSTOM_FPRINTF(fout, ")");
-//                    cout << port -> expression -> primary->primary_type << endl;
-//                    cout << port -> expression -> primary->value_type << endl;
-//                    CUSTOM_FPRINTF(fout, "(%s)", ast_identifier_tostring(port->expression->primary->value.identifier));
+                        CUSTOM_FPRINTF(fout, "(");
+                        PrintExpression( fout, port->expression, strSize );
+                        CUSTOM_FPRINTF(fout, ")");
+                        strSize += 3;
 
-//                    CUSTOM_FPRINTF(fout, ".%s(%s)", ast_identifier_tostring( port->port_name ),
-//                            ast_identifier_tostring(port->expression->primary->value.identifier) ); 
-                    if( k != numConnection-1 ) {
-                        CUSTOM_FPRINTF(fout, ", ");
+                        if( k != numConnection-1 ) {
+                            CUSTOM_FPRINTF(fout, ", ");
+                            LinePrint( fout, strSize, 2 );
+                        }
                     }
                 }
                 CUSTOM_FPRINTF(fout, " );\n");
+                strSize = 0;
             }
-//            assert(0);
         }
         else {
             CUSTOM_FPRINTF( fout, "  %s", ast_identifier_tostring(inst->module_identifer) );
@@ -434,29 +387,34 @@ void PrintModule ( FILE* fout, ast_module_declaration  * module ) {
             for(int j=0; j < inst->module_instances->items; j++) {
                 ast_module_instance* curInst = (ast_module_instance*) 
                     ast_list_get( inst->module_instances, j);
-                CUSTOM_FPRINTF(fout, " %s ( ", ast_identifier_tostring(curInst -> instance_identifier));
+                
+                CUSTOM_FPRINTF(fout, " ");
+                PrintIdentifier(fout, curInst -> instance_identifier, strSize);
+                CUSTOM_FPRINTF(fout, " ( ");
+                strSize += 4;
+                
+                if( curInst->port_connections ) {
+                    int numConnection = curInst->port_connections->items;
+                    for(int k=0; k<numConnection; k++) {
+                        ast_port_connection* port = (ast_port_connection*) 
+                            ast_list_get( curInst->port_connections, k);
 
-                int numConnection = curInst->port_connections->items;
-                for(int k=0; k<numConnection; k++) {
-                    ast_port_connection* port = (ast_port_connection*) 
-                        ast_list_get( curInst->port_connections, k);
-                    // Error
-                    CUSTOM_FPRINTF(fout, ".");
-                    PrintIdentifier( fout, port->port_name );
+                        CUSTOM_FPRINTF(fout, ".");
+                        PrintIdentifier( fout, port->port_name, strSize );
 
-                    CUSTOM_FPRINTF(fout, "(");
-//                    PrintPrimary( fout, port->expression->primary );
-                    PrintExpression( fout, port->expression );
-                    CUSTOM_FPRINTF(fout, ")");
+                        CUSTOM_FPRINTF(fout, "(");
+                        PrintExpression( fout, port->expression, strSize );
+                        CUSTOM_FPRINTF(fout, ")");
+                        strSize += 3;
 
-//                    CUSTOM_FPRINTF(fout, ".%s(%s)", ast_identifier_tostring( port->port_name ),
-//                            ast_identifier_tostring(port->expression->primary->value.identifier) ); 
-
-                    if( k != numConnection-1 ) {
-                        CUSTOM_FPRINTF(fout, ", ");
+                        if( k != numConnection-1 ) {
+                            CUSTOM_FPRINTF(fout, ", ");
+                            LinePrint( fout, strSize, 2 );
+                        }
                     }
                 }
                 CUSTOM_FPRINTF(fout, " );\n");
+                strSize = 0;
             }
         }
     }
@@ -469,20 +427,9 @@ void PrintModule ( FILE* fout, ast_module_declaration  * module ) {
 
 // Top Level - start from root
 void PrintVerilog( FILE* fout, verilog_source_tree * tree ) {
-
-//    dot_node root = dot_new_node(graph);
-//    dot_emit_node(graph,root,"Tree Root");
-//    dot_node mod_hier = dot_new_node(graph);
-//    dot_emit_edge(graph,root,mod_hier);
-//    dot_emit_node(graph, mod_hier, "Module Hierarchy");
-    
-    for(int m = 0; m < tree -> modules -> items; m ++)
-    {
+    for(int m = 0; m < tree -> modules -> items; m ++) {
         ast_module_declaration * module = (ast_module_declaration*)ast_list_get(tree->modules, m);
-        PrintModule(
-            fout,
-            module
-        );
+        PrintModule( fout, module );
     }
 }
 

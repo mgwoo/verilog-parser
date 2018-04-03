@@ -14,8 +14,8 @@ NAMESPACE_VERILOG_BEGIN
 // Verilog Writer Function
 void PrintVerilog( FILE* fout, verilog_source_tree * tree );
  
-size_t PrintExpression( FILE* fout, ast_expression* expression );
-size_t PrintPrimary( FILE* fout, ast_primary* primary );
+void PrintExpression( FILE* fout, ast_expression* expression, size_t& strSize );
+void PrintPrimary( FILE* fout, ast_primary* primary, size_t& strSize );
 
 NAMESPACE_VERILOG_END
 
