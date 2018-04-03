@@ -229,7 +229,7 @@ void verilog_preprocessor_macro_define(
 
         toadd -> macro_value = ast_strdup(macro_text);
     } else {
-        toadd -> macro_value = "";
+        toadd -> macro_value = strdup("");
     }
 
     //printf("MACRO: '%s' - '%s'\n", toadd -> macro_id, toadd -> macro_value);

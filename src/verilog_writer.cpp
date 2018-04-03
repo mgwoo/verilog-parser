@@ -26,20 +26,26 @@ NAMESPACE_VERILOG_BEGIN
 
 static int strBuffer = 200;
 
-int PrintIdentifier( FILE* fout, ast_identifier& identifier ) {
+size_t PrintIdentifier( FILE* fout, ast_identifier& identifier ) {
     RaiseErrorForNull( identifier );
-    CUSTOM_FPRINTF(fout, "%s", ast_identifier_tostring( identifier ) );
-    return strlen(ast_identifier_tostring(identifier));
+
+    char* getIdentifier = ast_identifier_tostring( identifier );
+    CUSTOM_FPRINTF(fout, "%s", getIdentifier);
+
+    size_t cnt = strlen(getIdentifier);
+    free(getIdentifier);
+
+    return cnt;
 }
 
-int PrintRangeNumber( FILE* fout, ast_number* number ) {
+size_t PrintRangeNumber( FILE* fout, ast_number* number ) {
     CUSTOM_FPRINTF(fout,  "%s", number->as_bits ); 
 }
 
 // this Part 'Must be' updated later
-int PrintNumber( FILE* fout, ast_number* number ) {
+size_t PrintNumber( FILE* fout, ast_number* number ) {
     RaiseErrorForNull( number );
-    int cnt = 0;
+    size_t cnt = 0;
 
     switch( number->representation ) {
         // currently, only REP_BITS is used!!
@@ -68,7 +74,7 @@ int PrintNumber( FILE* fout, ast_number* number ) {
     return cnt;
 }
 
-int PrintExpression( FILE* fout, ast_expression* expression ) {
+size_t PrintExpression( FILE* fout, ast_expression* expression ) {
     if( !expression ) { return 0; }
     RaiseErrorForNull( expression );
     
@@ -179,7 +185,7 @@ int PrintExpression( FILE* fout, ast_expression* expression ) {
     return len;
     
     /*
-    int cnt = 0;
+    size_t cnt = 0;
     cout << "expression type: " << expression->type << endl;
     if( expression->left ) {
         cout << "LEFT" << endl;
@@ -207,9 +213,9 @@ int PrintExpression( FILE* fout, ast_expression* expression ) {
     */
 }
 
-int PrintConcatenation( FILE* fout, ast_concatenation* concatenation ) {
+size_t PrintConcatenation( FILE* fout, ast_concatenation* concatenation ) {
     RaiseErrorForNull( concatenation );
-    int cnt = 0;
+    size_t cnt = 0;
 //    cout << "concatenation type: " << concatenation->type << endl;
     switch( concatenation->type ) {
         case CONCATENATION_EXPRESSION:
@@ -234,18 +240,20 @@ int PrintConcatenation( FILE* fout, ast_concatenation* concatenation ) {
         case CONCATENATION_MODULE_PATH:
             cnt = 0;
             for( int i=0; i< concatenation->items->items; i++) {
-                ast_identifier identifier = (ast_identifier)ast_list_get( concatenation->items, i ); 
-                fprintf(fout,"%s", ast_identifier_tostring(identifier) );
-                cnt += strlen( ast_identifier_tostring(identifier) );
+                ast_identifier identifier = (ast_identifier)ast_list_get( concatenation->items, i );
+                char* getIdentifier = ast_identifier_tostring(identifier); 
+                fprintf( fout,"%s", getIdentifier );
+                cnt += strlen( getIdentifier );
+                free( getIdentifier );
             }
             return cnt; 
     }
 }
 
-int PrintPrimary( FILE* fout, ast_primary* primary) {
+size_t PrintPrimary( FILE* fout, ast_primary* primary) {
     RaiseErrorForNull( primary );
     
-    int cnt = 0;
+    size_t cnt = 0;
     char* tmpchar = NULL;
 //    cout << "primary type: " << primary->value_type << endl;
     switch( primary->value_type ) {
@@ -298,26 +306,26 @@ void PrintModule ( FILE* fout, ast_module_declaration  * module ) {
     CUSTOM_FPRINTF(fout, " );\n");
    
     // print port information 
-    int strSize = 0;
+    size_t strSize = 0;
     for(int i = 0; i < portCnt; i++) {
         strSize = 0;
         ast_port_declaration * port = (ast_port_declaration*)ast_list_get(module->module_ports,i);
         
         switch(port -> direction) {
-            case PORT_INPUT : CUSTOM_FPRINTF(fout, "  input "); break;
-            case PORT_OUTPUT: CUSTOM_FPRINTF(fout, "  output ");break;
-            case PORT_INOUT : CUSTOM_FPRINTF(fout, "  inout ");break;
-            case PORT_NONE  : CUSTOM_FPRINTF(fout, "  unknown "); break;
-            default         : CUSTOM_FPRINTF(fout, "  unknown "); break;
+            case PORT_INPUT : CUSTOM_FPRINTF(fout, "  input ");     strSize += 8; break;
+            case PORT_OUTPUT: CUSTOM_FPRINTF(fout, "  output ");    strSize += 9; break;
+            case PORT_INOUT : CUSTOM_FPRINTF(fout, "  inout ");     strSize += 8; break;
+            case PORT_NONE  : CUSTOM_FPRINTF(fout, "  unknown ");   strSize += 10;break;
+            default         : CUSTOM_FPRINTF(fout, "  unknown ");   strSize += 10;break;
         }
         
         if( port->range != NULL ) {
-            CUSTOM_FPRINTF( fout, "[");
+            CUSTOM_FPRINTF( fout, "[" );
             strSize += 1;
             strSize += PrintRangeNumber( fout, port->range->upper->primary->value.number );
             // cout << port->range->upper->primary->value_type << endl;
             strSize += PrintRangeNumber( fout, port->range->lower->primary->value.number );
-            CUSTOM_FPRINTF( fout, " ");
+            CUSTOM_FPRINTF( fout, " " );
             strSize += 1;
         }
 
@@ -344,24 +352,26 @@ void PrintModule ( FILE* fout, ast_module_declaration  * module ) {
     int wireCnt = module->net_declarations->items;
     if( wireCnt > 0 ) {
         CUSTOM_FPRINTF(fout, "  wire ");
+        strSize += 7;
     }
     for(int i = 0; i < wireCnt ; i++) {
         ast_net_declaration* net = (ast_net_declaration*) ast_list_get(module->net_declarations, i);
-        CUSTOM_FPRINTF(fout, "%s", ast_identifier_tostring(net->identifier) );
+        strSize += PrintIdentifier( fout, net->identifier );
         
         if( i != wireCnt-1 ) {
             CUSTOM_FPRINTF(fout, ", ");
+            strSize += 2;
         }
-        strSize += strlen( ast_identifier_tostring(net->identifier) );
         if( strSize > VERILOG_LINE_MAX ) {
             CUSTOM_FPRINTF(fout, "\n       ");
-            strSize = 0;
+            strSize = 7;
         }
     }
     if( wireCnt > 0 ) {
         CUSTOM_FPRINTF(fout, ";\n");
     }
 
+    strSize = 0;
     for(int i = 0; i < module -> module_instantiations -> items; i ++) {
         ast_module_instantiation * inst = 
                             (ast_module_instantiation*)ast_list_get(module->module_instantiations,i);
@@ -369,15 +379,29 @@ void PrintModule ( FILE* fout, ast_module_declaration  * module ) {
         // this is another module in other verilog.
         if( inst->resolved ) {
             ast_module_declaration* module = inst->declaration;
-            CUSTOM_FPRINTF( fout, "  %s", ast_identifier_tostring(module->identifier));
+
+            CUSTOM_FPRINTF( fout, "  " );
+            strSize += 2;
+            strSize += PrintIdentifier( fout, module->identifier );
+            
+//            char* getIdentifier = ast_identifier_tostring( module->identifier );
+//            CUSTOM_FPRINTF( fout, "  %s", getIdentifier );
+//            free( getIdentifier );
 //            cout << "instCount: " << inst->module_instances->items << endl;
 //            cout << "paramCount: " << inst->module_parameters->items << endl;
 
             for(int j=0; j < inst->module_instances->items; j++) {
                 ast_module_instance* curInst = (ast_module_instance*) 
                     ast_list_get( inst->module_instances, j);
-                CUSTOM_FPRINTF(fout, " %s ( ", ast_identifier_tostring(curInst -> instance_identifier));
+                
+                CUSTOM_FPRINTF(fout, " ");
+                strSize += 1;
+                
+                strSize += PrintIdentifier( fout, curInst-> instance_identifier );
 
+                CUSTOM_FPRINTF(fout, " ( ");
+                strSize += 3;
+                
                 int numConnection = curInst->port_connections->items;
 //                cout << endl << "numConnection: " << numConnection << endl;
                 for(int k=0; k<numConnection; k++) {

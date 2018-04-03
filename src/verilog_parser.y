@@ -7,6 +7,7 @@
 %define parse.error verbose
 
 %{
+    #include <string>
     #include <stdio.h>
     #include <string.h>
     #include <assert.h>
@@ -14,6 +15,7 @@
     #include "verilog_global.h" 
     #include "verilog_ast.h"
 
+    using std::string;
 
     extern int yylex();
     extern int yylineno;
@@ -2337,15 +2339,17 @@ gate_enable :
 }
 | enable_gatetype OB output_terminal COMMA input_terminal COMMA 
   enable_terminal CB COMMA n_output_gate_instances{
+    char tmp[] = "unamed_gate";
     ast_enable_gate_instance * gate = ast_new_enable_gate_instance(
-        ast_new_identifier("unamed_gate",yylineno), $3,$7,$5);
+        ast_new_identifier(tmp,yylineno), $3,$7,$5);
     ast_list_preappend($10,gate);
     $$ = ast_new_enable_gate_instances((ast_gatetype_n_input)$1,NULL,NULL,$10);
 }
 | enable_gatetype OB output_terminal COMMA input_terminal COMMA 
   enable_terminal CB{
+    char tmp[] = "unamed_gate";
     ast_enable_gate_instance * gate = ast_new_enable_gate_instance(
-        ast_new_identifier("unamed_gate",yylineno), $3,$7,$5);
+        ast_new_identifier(tmp, yylineno), $3,$7,$5);
     ast_list * list = ast_list_new();
     ast_list_append(list,gate);
     $$ = ast_new_enable_gate_instances((ast_gatetype_n_input)$1,NULL,NULL,list);
@@ -2392,17 +2396,18 @@ gate_n_input :
     $$ = ast_new_n_input_gate_instances($1,NULL,$3,$4);
   }
 | gatetype_n_input OB output_terminal COMMA input_terminals CB {
+    char tmp[] = "unamed_gate";
     ast_n_input_gate_instance * gate = ast_new_n_input_gate_instance(
-        ast_new_identifier("unamed_gate",yylineno), $5,$3);
+        ast_new_identifier(tmp, yylineno), $5,$3);
     ast_list * list = ast_list_new();
     ast_list_append(list,gate);
     $$ = ast_new_n_input_gate_instances($1,NULL,NULL,list);
   }
 | gatetype_n_input OB output_terminal COMMA input_terminals CB 
   COMMA n_input_gate_instances{
-    
+    char tmp[] = "unamed_gate";
     ast_n_input_gate_instance * gate = ast_new_n_input_gate_instance(
-        ast_new_identifier("unamed_gate",yylineno), $5,$3);
+        ast_new_identifier(tmp,yylineno), $5,$3);
     ast_list * list = $8;
     ast_list_preappend(list,gate);
     $$ = ast_new_n_input_gate_instances($1,NULL,NULL,list);
@@ -2612,7 +2617,10 @@ pullup_strength             :
 
 name_of_gate_instance   : 
   gate_instance_identifier range_o {$$ = $1;}
-| {$$ = ast_new_identifier("Unnamed gate instance", yylineno);}
+| {
+    char tmp[] = "Unnamed gate instance";
+    $$ = ast_new_identifier(tmp, yylineno);
+  }
 ;
 
 /* A.3.3 primitive terminals */

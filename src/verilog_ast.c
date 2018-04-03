@@ -124,7 +124,7 @@ char * ast_primary_tostring(
         default:
             printf("primary type to string not supported: %d %s\n",
                 __LINE__,__FILE__);
-            tr = "<unsupported>";
+            tr = strdup("<unsupported>");
             break;
     }
 
@@ -277,39 +277,37 @@ ast_expression * ast_new_expression_primary(ast_primary * p)
 //! Returns the string representation of an operator;
 char * ast_operator_tostring(ast_operator op)
 {
-    switch(op)
-    {
-
-        case OPERATOR_STAR   : return "*"; 
-        case OPERATOR_PLUS   : return "+"; 
-        case OPERATOR_MINUS  : return "-"; 
-        case OPERATOR_ASL    : return "<<<"; 
-        case OPERATOR_ASR    : return ">>>"; 
-        case OPERATOR_LSL    : return "<<"; 
-        case OPERATOR_LSR    : return ">>>"; 
-        case OPERATOR_DIV    : return "/"; 
-        case OPERATOR_POW    : return "^"; 
-        case OPERATOR_MOD    : return "%"; 
-        case OPERATOR_GTE    : return ">="; 
-        case OPERATOR_LTE    : return "<="; 
-        case OPERATOR_GT     : return ">"; 
-        case OPERATOR_LT     : return "<"; 
-        case OPERATOR_L_NEG  : return "!"; 
-        case OPERATOR_L_AND  : return "&&"; 
-        case OPERATOR_L_OR   : return "||"; 
-        case OPERATOR_C_EQ   : return "=="; 
-        case OPERATOR_L_EQ   : return "="; 
-        case OPERATOR_C_NEQ  : return "!="; 
-        case OPERATOR_L_NEQ  : return "!="; 
-        case OPERATOR_B_NEG  : return "~"; 
-        case OPERATOR_B_AND  : return "&"; 
-        case OPERATOR_B_OR   : return "|"; 
-        case OPERATOR_B_XOR  : return "^"; 
-        case OPERATOR_B_EQU  : return "==="; 
-        case OPERATOR_B_NAND : return "~&"; 
-        case OPERATOR_B_NOR  : return "~|"; 
-        case OPERATOR_TERNARY: return "?"; 
-        default: return " ";
+    switch(op) {
+        case OPERATOR_STAR   : return strdup("*"); 
+        case OPERATOR_PLUS   : return strdup("+"); 
+        case OPERATOR_MINUS  : return strdup("-"); 
+        case OPERATOR_ASL    : return strdup("<<<"); 
+        case OPERATOR_ASR    : return strdup(">>>"); 
+        case OPERATOR_LSL    : return strdup("<<"); 
+        case OPERATOR_LSR    : return strdup(">>>"); 
+        case OPERATOR_DIV    : return strdup("/"); 
+        case OPERATOR_POW    : return strdup("^"); 
+        case OPERATOR_MOD    : return strdup("%"); 
+        case OPERATOR_GTE    : return strdup(">="); 
+        case OPERATOR_LTE    : return strdup("<="); 
+        case OPERATOR_GT     : return strdup(">"); 
+        case OPERATOR_LT     : return strdup("<"); 
+        case OPERATOR_L_NEG  : return strdup("!"); 
+        case OPERATOR_L_AND  : return strdup("&&"); 
+        case OPERATOR_L_OR   : return strdup("||"); 
+        case OPERATOR_C_EQ   : return strdup("=="); 
+        case OPERATOR_L_EQ   : return strdup("="); 
+        case OPERATOR_C_NEQ  : return strdup("!="); 
+        case OPERATOR_L_NEQ  : return strdup("!="); 
+        case OPERATOR_B_NEG  : return strdup("~"); 
+        case OPERATOR_B_AND  : return strdup("&"); 
+        case OPERATOR_B_OR   : return strdup("|"); 
+        case OPERATOR_B_XOR  : return strdup("^"); 
+        case OPERATOR_B_EQU  : return strdup("==="); 
+        case OPERATOR_B_NAND : return strdup("~&"); 
+        case OPERATOR_B_NOR  : return strdup("~|"); 
+        case OPERATOR_TERNARY: return strdup("?"); 
+        default: return strdup(" ");
     }
 }
 
@@ -323,7 +321,7 @@ if exp is NULL.
 char * ast_expression_tostring(
     ast_expression * exp
 ){
-    if(exp == NULL){return "";}
+    if(exp == NULL){return strdup("");}
     char * tr;
     char * lhs;
     char * rhs;
@@ -359,6 +357,7 @@ char * ast_expression_tostring(
             strcat(tr, op); 
             strcat(tr,pri);
             strcat(tr,")");
+            free(op);
             break;
         case BINARY_EXPRESSION:
         case MODULE_PATH_BINARY_EXPRESSION:
@@ -372,6 +371,7 @@ char * ast_expression_tostring(
             strcat(tr, op); 
             strcat(tr,rhs);
             strcat(tr,")");
+            free(op);
             break;
         case RANGE_EXPRESSION_UP_DOWN:
             lhs = ast_expression_tostring(exp -> left);
@@ -420,7 +420,7 @@ char * ast_expression_tostring(
         default:
             printf("ERROR: Expression type to string not supported. %d of %s",
                 __LINE__,__FILE__);
-            tr = "<unsupported>";
+            tr = strdup("<unsupported>");
             break;
 
     }
@@ -2538,9 +2538,10 @@ ast_statement_block * ast_extract_statement_block(
             ast_list * stm_list = ast_list_new();
             ast_list_append(stm_list, stm);
 
+            char tmp[] = "Unnamed block";
             ast_statement_block * tr = ast_new_statement_block(
                 (ast_block_type)STM_BLOCK,
-                ast_new_identifier("Unnamed block", body -> meta.line),
+                ast_new_identifier(tmp, body -> meta.line),
                 ast_list_new(), // Empty list, no declarations are made.
                 stm_list
             );
@@ -2557,9 +2558,10 @@ ast_statement_block * ast_extract_statement_block(
         ast_list * stm_list = ast_list_new();
         ast_list_append(stm_list, body);
 
+        char tmp[] = "Unnamed block";
         ast_statement_block * tr = ast_new_statement_block(
             (ast_block_type)STM_BLOCK,
-            ast_new_identifier("Unnamed block", body -> meta.line),
+            ast_new_identifier(tmp, body -> meta.line),
             ast_list_new(), // Empty list, no declarations are made.
             stm_list
         );
@@ -2760,8 +2762,7 @@ will be returned.
 @returns A copy of the identifiers full name, as a null terminated character
 array.
 */
-char * ast_identifier_tostring(ast_identifier id)
-{
+char * ast_identifier_tostring(ast_identifier id) {
     char * tr = ast_strdup(id -> identifier);   
     ast_identifier walker = id;
 
@@ -2956,7 +2957,7 @@ char * ast_number_tostring(
             sprintf(tr, "%20f", n -> as_float);
             break;
         default:
-            tr = "NULL";
+            tr = strdup("NULL");
             break;
     }
 
