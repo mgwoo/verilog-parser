@@ -1,5 +1,5 @@
 
-# C++ Verilog Parser
+# C++ Verilog Parser/Writer
 
 [![Documentation](https://codedocs.xyz/ben-marshall/verilog-parser.svg)](https://codedocs.xyz/ben-marshall/verilog-parser/)
 [![Build Status](https://travis-ci.org/ben-marshall/verilog-parser.svg?branch=master)](https://travis-ci.org/ben-marshall/verilog-parser/branches)
@@ -54,8 +54,8 @@ The parser will automatically follow any `include` directives it finds.
 The original author used [ASIC World](http://www.asic-world.com/) 
 and [OpenSPARCT1](http://www.oracle.com/technetwork/systems/opensparc/opensparc-t1-page-1444609.html)
 to test codes, but I mainly focused on benchmarks of 
-[ICCAD Contest 2015; Problem C](http://cad-contest.el.cycu.edu.tw/problem_C/default.html) 
-whether this code works well or not.
+[ICCAD Contest 2015; Problem C](http://cad-contest.el.cycu.edu.tw/problem_C/default.html), 
+kinds of gate-level netlist. 
 
 
 ---
