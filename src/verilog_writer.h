@@ -1,8 +1,3 @@
-/*!
-@file verilog-ast-walk.h
-@brief Contains declarations of functions and structures used to walk the
-verilog source tree.
-*/
 
 #include "verilog_parser.h"
 

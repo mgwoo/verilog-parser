@@ -1,8 +1,3 @@
-/*!
-@file verilog-ast-walk.c
-@brief Contains definitions of functions and structures used to walk the
-verilog source tree.
-*/
 
 #define VERILOG_LINE_MAX 45
 #define CUSTOM_FPRINTF(fmt, ...) {if(fmt) {fprintf(fmt, ##__VA_ARGS__); fflush(stdout);}}
@@ -454,10 +449,6 @@ void PrintModule ( FILE* fout, ast_module_declaration  * module ) {
     }
     CUSTOM_FPRINTF(fout, "endmodule\n");
 }
-
-/*!
-@brief Recursively decends the syntax tree, emiting the dot graph as it goes.
-*/
 
 // Top Level - start from root
 void PrintVerilog( FILE* fout, verilog_source_tree * tree ) {
