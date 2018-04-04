@@ -272,7 +272,6 @@ void PrintLeftValue( FILE* fout, ast_lvalue* lvalue, size_t& strSize ) {
 @brief Recursively walks the module declaration and instantiation hierarcy.
 */
 void PrintModule ( FILE* fout, ast_module_declaration  * module ) {
-    fout = NULL;
     // print module title
     size_t strSize = 0;
     CUSTOM_FPRINTF(fout, "\nmodule %s ( ", module -> identifier->identifier);
