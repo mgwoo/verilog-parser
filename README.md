@@ -11,7 +11,6 @@ This repository was forked from [ben-marshall's verilog parser in C](https://git
 - [Getting Started](#getting-started)
 - [Testing](#testing)
 - [Solved Issue](#solved-issue)
-- [Todo List](#todo)
 
 ---
 
@@ -24,10 +23,10 @@ This will get you have c++ verilog parsing binary.
     $ make -j4
 
 To start using the parser in your own code, take a look at 
-[main.c](./src/main.c) which is a simple demonstration app used for testing
+[main.cpp](./src/main.cpp) which is a simple demonstration app used for testing
 and coverage. The basic code which you need is something like this:
 
-```C
+```C++
 // Initialise the parser.
 verilog_parser_init();
 
@@ -37,39 +36,27 @@ FILE * fh = fopen("my_verilog_file.v", "r");
 // Parse the file and store the result.
 int result = verilog_parse_file(fh);
 
-if(result == 0)
-    printf("Parse successful\n");
-else
-    printf("Parse failed\n");
+verilog::verilog_source_tree* ast = verilog::yy_verilog_source_tree;
+verilog::verilog_resolve_modules(ast);
 
-fclose(fh);
+FILE* fout = fopen("writing_veilog.v", "w");
+PrintVerilog(fout, ast);
+
+
 ```
 
 You can keep calling `verilog_parse_file(fh)` on as many different file
 handles as you like to build up a multi-file project AST representation.
 The parser will automatically follow any `include` directives it finds.
 
-For an example of using the library in a real*ish* situation, the
-[verilog-dot](https://github.com/ben-marshall/verilog-dot) project shows how
-the library can be integrated into an existing project and used.
-
 ## Testing
 
-The test suite is comprised of example code taken from
-the fantastic [ASIC World](http://www.asic-world.com/) tutorial on Verilog.
-The idea being that by using a well-known and comprehensive set of
-tutorial examples, almost all of the syntactic features of the language can be
-hit very easily with little effort.
+The original author used [ASIC World](http://www.asic-world.com/) 
+and [OpenSPARCT1](http://www.oracle.com/technetwork/systems/opensparc/opensparc-t1-page-1444609.html)
+to test codes, but I mainly focused on benchmarks of 
+[ICCAD Contest 2015; Problem C](http://cad-contest.el.cycu.edu.tw/problem_C/default.html) 
+whether this code works well or not.
 
-The repository also contains an archive of verilog source code taken from the
-[OpenSPARCT1](http://www.oracle.com/technetwork/systems/opensparc/opensparc-t1-page-1444609.html)
-microprocessor from Oracle. This archive is unpacked into the `tests/`
-directory when `make setup` is run, and ensures that the parser is able to
-handle a *real-life* source base in terms of scale and complexity.  The full
-workspace environment required to run or analyse the OpenSPARCT1 is not
-provided, the files only demonstrate the ability to correctly parse a large
-project, and handle the various internal header files and preprocessor
-definitions.
 
 ---
 
@@ -77,10 +64,6 @@ definitions.
 
 - Both of gcc/g++ now successfully compile this project (void ptr/extern variable/operator problem)
 - Added static library linking options. (libverilog\_parser.a)
- 
-## Todo
-
-- Implement Verilog Writer(with custom indent)
-- Multiple module parsing support
-
+- Apply namespace(verilog) as not to conflict with oter variable name.
+- Implement Verilog Writer (with custom line break)
 
