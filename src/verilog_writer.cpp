@@ -255,11 +255,24 @@ void PrintPrimary( FILE* fout, ast_primary* primary, size_t& strSize) {
     }
 }
 
+void PrintLeftValue( FILE* fout, ast_lvalue* lvalue, size_t& strSize ) {
+    RaiseErrorForNull( lvalue );
+    switch( lvalue->type ) {
+        case NET_IDENTIFIER:
+        case VAR_IDENTIFIER:
+        case GENVAR_IDENTIFIER:
+            PrintIdentifier( fout, lvalue-> data.identifier, strSize ); break;
+        case NET_CONCATENATION:
+        case VAR_CONCATENATION:
+            PrintConcatenation( fout, lvalue-> data.concatenation, strSize ); break;
+    }
+}
+
 /*!
 @brief Recursively walks the module declaration and instantiation hierarcy.
 */
 void PrintModule ( FILE* fout, ast_module_declaration  * module ) {
-
+    fout = NULL;
     // print module title
     size_t strSize = 0;
     CUSTOM_FPRINTF(fout, "\nmodule %s ( ", module -> identifier->identifier);
@@ -333,6 +346,28 @@ void PrintModule ( FILE* fout, ast_module_declaration  * module ) {
             }
         }
         CUSTOM_FPRINTF(fout, ";\n");
+    }
+
+    // print assignment info
+    strSize = 0;
+    if( module->continuous_assignments ) {
+        int assignCnt = module->continuous_assignments->items;
+        for(int i=0; i<assignCnt; i++) {
+            ast_continuous_assignment* assign = 
+                (ast_continuous_assignment*) ast_list_get( module->continuous_assignments, i );
+            CUSTOM_FPRINTF( fout, "  assign " );
+            strSize = 9;
+            for(int j=0; j<assign->assignments->items; j++ ) {
+                ast_single_assignment* assignment = 
+                    (ast_single_assignment*) ast_list_get( assign->assignments, j );
+                PrintLeftValue( fout, assignment->lval, strSize );
+                CUSTOM_FPRINTF( fout, " = " );
+                strSize += 3;
+                PrintExpression( fout, assignment->expression, strSize );
+            }
+            CUSTOM_FPRINTF( fout, ";\n");
+            strSize = 0;
+        }
     }
 
     strSize = 0;
