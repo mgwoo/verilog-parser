@@ -3,6 +3,8 @@
 *.o
 */**/*.o
 
+include/
+lib/
 src/verilog_scanner.c
 src/verilog_parser.output
 src/verilog_parser.tab.c

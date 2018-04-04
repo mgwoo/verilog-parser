@@ -5,9 +5,9 @@ BISON = bison
 FLEX = flex
 
 CXXOPTS = -m64 -O3 -fPIC -mtune=native -march=native -fno-strict-aliasing -fexceptions -DIL_STD -Wno-ctor-dtor-privacy -fno-permissive
-
 CFLAGS =  -O3 -fPIC -mtune=native -march=native -g -ggdb -fno-permissive
 
+PREFIX = ..
 
 # linking flag settings
 LINKCFLAGS = $(CFLAGS) -static-libstdc++
@@ -63,11 +63,15 @@ main.o: main.cpp verilog_parser.h verilog_ast_common.h verilog_preprocessor.h ve
 static: libverilog_parser.a
 
 libverilog_parser.a: verilog_ast.o verilog_ast_common.o verilog_ast_mem.o verilog_ast_util.o verilog_parser.tab.o verilog_parser_wrapper.o verilog_preprocessor.o verilog_scanner.o verilog_writer.o
-	ar rc $@ $^ 
+	ar rc $@ $^
+	mkdir -p $(PREFIX)/lib
+	mv $@ $(PREFIX)/lib/$@
+	mkdir -p $(PREFIX)/include
+	cp *.h $(PREFIX)/include
 
 
 .PHONY: clean
 clean: 
-	/bin/rm -f *.o $(EXE) verilog_parser.tab.c verilog_parser.tab.h verilog_scanner.c verilog_parser.output libverilog_parser.a parser 2> /dev/null;
+	/bin/rm -f *.o $(EXE) verilog_parser.tab.c verilog_parser.tab.h verilog_scanner.c verilog_parser.output $(PREFIX)/lib/libverilog_parser.a $(PREFIX)/include/*.h parser 2> /dev/null;
 
 
