@@ -544,14 +544,12 @@ void PrintModule ( FILE* fout, ast_module_declaration  * module ) {
         }
     }
 
-    cout << "gate_instantiations: " << module->gate_instantiations->items << endl;
     for(int i=0; i<module->gate_instantiations->items; i++) {
         ast_gate_instantiation * gate = (ast_gate_instantiation*) ast_list_get( module->gate_instantiations, i );
-        
         PrintGate(fout, gate, strSize);
     }
 
-    CUSTOM_FPRINTF(fout, "endmodule\n");
+    CUSTOM_FPRINTF(fout, "\nendmodule\n");
 }
 
 // Top Level - start from root
