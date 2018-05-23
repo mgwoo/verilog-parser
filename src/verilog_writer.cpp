@@ -75,6 +75,10 @@ void PrintNumber( FILE* fout, ast_number* number, size_t& strSize ) {
     strSize += 2;
 }
 
+
+
+
+
 void PrintExpression( FILE* fout, ast_expression* expression, size_t& strSize ) {
     if( !expression ) { return; }
     RaiseErrorForNull( expression );
@@ -263,6 +267,97 @@ void PrintLeftValue( FILE* fout, ast_lvalue* lvalue, size_t& strSize ) {
     }
 }
 
+void PrintLvalue( FILE* fout, ast_lvalue* lvalue, size_t& strSize) {
+    RaiseErrorForNull( lvalue );
+    switch( lvalue->type ) {
+        case NET_IDENTIFIER:
+        case VAR_IDENTIFIER:
+        case GENVAR_IDENTIFIER:
+            PrintIdentifier( fout, lvalue->data.identifier, strSize ); break;
+
+        case NET_CONCATENATION:
+        case VAR_CONCATENATION:
+            PrintConcatenation( fout, lvalue->data.concatenation, strSize ); break;
+    }
+}
+
+
+void PrintGate( FILE* fout, ast_gate_instantiation* gate, size_t& strSize) {
+    RaiseErrorForNull( gate );
+
+
+    switch( gate->type ) {
+        case GATE_N_OUT:
+            switch( gate->n_out->type ) {
+                case N_OUT_NOT: CUSTOM_FPRINTF( fout, "not" ); strSize += 4; break;
+                case N_OUT_BUF: CUSTOM_FPRINTF( fout, "buf" ); strSize += 4; break;
+            }
+
+            CUSTOM_FPRINTF( fout, " ");
+
+            for(int i=0; i<gate->n_out->instances->items; i++) {
+                ast_n_output_gate_instance* inst = (ast_n_output_gate_instance*) ast_list_get( gate->n_out->instances, i); 
+                PrintIdentifier( fout, inst->name, strSize );
+
+                // output terminal Info
+                CUSTOM_FPRINTF( fout, "(");
+
+                int numOutputTerm= inst->outputs->items;
+                // input terminal Info
+                for(int j=0; j<numOutputTerm; j++) {
+                    ast_lvalue* curTerm = (ast_lvalue*) ast_list_get( inst->outputs, j );
+                    PrintLvalue( fout, curTerm, strSize );
+                    if( j != numOutputTerm-1) {
+                        CUSTOM_FPRINTF( fout, ",");
+                    }
+                }
+                CUSTOM_FPRINTF( fout, ",");
+                PrintExpression( fout, inst->input, strSize );
+            }
+            CUSTOM_FPRINTF( fout, ");\n"); 
+            strSize = 0;
+            break;
+            
+            break;
+        case GATE_N_IN:
+            switch( gate->n_in->type ) {
+                case N_IN_AND: CUSTOM_FPRINTF( fout, "and" ); strSize += 4; break;
+                case N_IN_NAND: CUSTOM_FPRINTF( fout, "nand" ); strSize += 5; break;
+                case N_IN_NOR: CUSTOM_FPRINTF( fout, "nor" ); strSize += 4; break;
+                case N_IN_OR: CUSTOM_FPRINTF( fout, "or" ); strSize += 3; break;
+                case N_IN_XOR: CUSTOM_FPRINTF( fout, "xor" ); strSize += 4; break;
+                case N_IN_XNOR: CUSTOM_FPRINTF( fout, "xnor" ); strSize += 5; break;
+            }
+
+            CUSTOM_FPRINTF( fout, " ");
+
+            for(int i=0; i<gate->n_in->instances->items; i++) {
+                ast_n_input_gate_instance* inst = (ast_n_input_gate_instance*) ast_list_get( gate->n_in->instances, i); 
+                PrintIdentifier( fout, inst->name, strSize );
+
+                // output terminal Info
+                CUSTOM_FPRINTF( fout, "(");
+                PrintLvalue( fout, inst->output_terminal, strSize );
+                CUSTOM_FPRINTF( fout, ",");
+
+                int numInputTerm = inst->input_terminals->items;
+                // input terminal Info
+                for(int j=0; j<numInputTerm; j++) {
+                    ast_expression* curTerm = (ast_expression*) ast_list_get( inst->input_terminals, j );
+                    PrintExpression( fout, curTerm, strSize );
+                    if( j != numInputTerm -1) {
+                        CUSTOM_FPRINTF( fout, ",");
+                    }
+                }
+            }
+            CUSTOM_FPRINTF( fout, ");\n"); 
+            strSize = 0;
+            break;
+        default: 
+            CUSTOM_FPRINTF( fout, "CANNOT SUPPORT OTHER GATETYPE: %d\n", gate->type );
+    }
+}
+
 /*!
 @brief Recursively walks the module declaration and instantiation hierarcy.
 */
@@ -365,6 +460,7 @@ void PrintModule ( FILE* fout, ast_module_declaration  * module ) {
     }
 
     strSize = 0;
+
     for(int i = 0; i < module -> module_instantiations -> items; i ++) {
         ast_module_instantiation * inst = 
                             (ast_module_instantiation*)ast_list_get(module->module_instantiations,i);
@@ -447,6 +543,14 @@ void PrintModule ( FILE* fout, ast_module_declaration  * module ) {
             }
         }
     }
+
+    cout << "gate_instantiations: " << module->gate_instantiations->items << endl;
+    for(int i=0; i<module->gate_instantiations->items; i++) {
+        ast_gate_instantiation * gate = (ast_gate_instantiation*) ast_list_get( module->gate_instantiations, i );
+        
+        PrintGate(fout, gate, strSize);
+    }
+
     CUSTOM_FPRINTF(fout, "endmodule\n");
 }
 
