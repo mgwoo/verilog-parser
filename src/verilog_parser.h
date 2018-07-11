@@ -31,7 +31,7 @@ extern void yyrestart (FILE *input_file  );
 extern void yy_switch_to_buffer (YY_BUFFER_STATE new_buffer  );
 extern YY_BUFFER_STATE yy_create_buffer (FILE *file,int size  );
 extern YY_BUFFER_STATE yy_scan_buffer (char *base,yy_size_t size  );
-extern YY_BUFFER_STATE yy_scan_bytes (const char *bytes,int len  );
+extern YY_BUFFER_STATE yy_scan_bytes (const char *bytes,yy_size_t len  );
 extern void yy_delete_buffer (YY_BUFFER_STATE b  );
 
 NAMESPACE_VERILOG_BEGIN
