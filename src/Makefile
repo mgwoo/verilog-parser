@@ -4,8 +4,8 @@ CXX = g++
 BISON = bison
 FLEX = flex
 
-CXXOPTS = -m64 -O3 -fPIC -mtune=native -march=native -fno-strict-aliasing -fexceptions -DIL_STD -Wno-ctor-dtor-privacy -fno-permissive
-CFLAGS =  -O3 -fPIC -mtune=native -march=native -g -ggdb -fno-permissive
+CXXOPTS = -m64 -O3 -fPIC -fno-strict-aliasing -fexceptions -DIL_STD -Wno-ctor-dtor-privacy -fno-permissive
+CFLAGS =  -O3 -fPIC -g -ggdb -fno-permissive
 
 PREFIX = ..
 
