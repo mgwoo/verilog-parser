@@ -1,7 +1,7 @@
 EXE = parser
 
 CXX = g++
-BISON = bison
+BISON = BISON_PKGDATADIR=../module/bison/install/3.0.5/share/bison ../module/bison/install/3.0.5/bin/bison
 FLEX = flex
 
 CXXOPTS = -m64 -O3 -fPIC -fno-strict-aliasing -fexceptions -DIL_STD -Wno-ctor-dtor-privacy -fno-permissive
