@@ -1,11 +1,12 @@
 EXE = parser
 
 CXX = g++
-BISON = BISON_PKGDATADIR=../module/bison/install/3.0.5/share/bison ../module/bison/install/3.0.5/bin/bison
-FLEX = flex
+BISON = bison
+FLEX = ../module/flex/install/2.6.4/bin/flex
+
 
 CXXOPTS = -m64 -O3 -fPIC -fno-strict-aliasing -fexceptions -DIL_STD -Wno-ctor-dtor-privacy -fno-permissive
-CFLAGS =  -O3 -fPIC -g -ggdb -fno-permissive
+CFLAGS =  -O3 -fPIC -fno-permissive
 
 PREFIX = ..
 
@@ -18,7 +19,7 @@ DEBUG = -g -gstrict-dwarf -gdwarf-2
 all: $(EXE) static
 
 $(EXE): verilog_ast.o verilog_ast_common.o verilog_ast_mem.o verilog_ast_util.o verilog_parser.tab.o verilog_parser_wrapper.o verilog_preprocessor.o verilog_scanner.o verilog_writer.o main.o
-	$(CXX) $(DEBUG) $(CXXOPTS) $^ -o $@ $(LINKCFLAGS)
+	$(CXX) $(CXXOPTS) $^ -o $@ $(LINKCFLAGS)
 
 # Verilog Traversing Module
 verilog_writer.o: verilog_writer.cpp verilog_writer.h verilog_parser.h

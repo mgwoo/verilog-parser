@@ -1,2 +1,0 @@
-#! /bin/sh
-exec '/home/mgwoo/util/bison/install/3.0.5/bin/bison' -y "$@"
